@@ -13,6 +13,8 @@ public class Peer {
 	private ServerSocket sev;
 	private Socket soc;
 	private ArrayList<Socket> myPeers;
+	private boolean [] connected;
+	private int numConnectedSev;
 	public Peer (String peerId) {
 		//System.out.println("Test");
 		try {
@@ -24,6 +26,13 @@ public class Peer {
 			//sev.setSoTimeout(100);
 			soc = new Socket();
 			myPeers = new ArrayList<Socket>();
+			numConnectedSev = 1;
+			connected = new boolean [peerPorts.length];
+			for (int i = 0; i < peerPorts.length; i++) {
+				if (peersPorts[i] == port) {
+					connected[i] = true;
+				}
+			}
 		}
 		catch (Exception e) {
 			System.out.println(e.toString());
@@ -38,11 +47,12 @@ public class Peer {
 		try {
 			for (int i = 0; i < peerPorts.length; i++) { // && !soc.isConnected(); i++) {
 				System.out.print("PortMe: " + port + " To Port: " + peerPorts[i] );
-				if (peerPorts[i] != port) {
+				if (!connected[i]) {
 					myPeers.add(new Socket("localhost", peerPorts[i]));
 					//soc.connect(new InetSocketAddress("localhost", peerPorts[i]));
 					System.out.println(" Worked!");
 					System.out.println("Socket: " + myPeers.get(myPeers.size()-1).toString());
+					connected[i] = true;
 				}
 				else {
 					System.out.println(" Failed!");
@@ -57,14 +67,35 @@ public class Peer {
 	}
 	
 	public void accept() {
-		try {
-			System.out.println("Waiting");
-			Socket p = sev.accept();
-			myPeers.add(p);
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-			System.exit(1);
+		if (numConnected < peerPorts.length) { 
+			try {
+				System.out.println("Waiting");
+				Socket p = sev.accept();
+				if (!myPeers.contains(p)) {
+					myPeers.add(p);
+					numConnected++;
+				}
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+				System.exit(1);
+			}
 		}
 	}
+	public boolean serverFullyConnected() {
+		if (myPeers.size() == peerPorts.length-1) {
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean socketsFullyConnected() {
+		for (int i = 0; i < connected.length; i++) {
+			if (!connected[i]) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
 }

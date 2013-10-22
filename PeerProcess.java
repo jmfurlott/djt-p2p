@@ -11,7 +11,7 @@ public class PeerProcess {
 		System.out.println("Running");
 		//System.out.println(Arrays.toString(args));
 		Peer peer = new Peer(args[0]);
-		while (true) {
+		while (!serverFullyConnected() && !socketsFullyConnected()) {
 		//System.out.println("TY");
 			peer.connect();
 			peer.accept();
