@@ -7,35 +7,42 @@ import java.net.ServerSocket;
 import java.util.ArrayList;
 
 public class Peer {
-	private static ArrayList<Integer> peerPorts = new ArrayList<Integer>();
-	private static int nextPort = 0;
+	private static int [] peerPorts = { 1001, 1002, 1003, 1004, 1005, 1006 };
+	// private static int nextPort = 0;
 	private int port;
 	private ServerSocket sev;
 	private Socket soc;
 	private ArrayList<Socket> myPeers;
-	public Peer () {
+	public Peer (String peerId) {
+		//System.out.println("Test");
 		try {
-			port = nextPort;
-			peerPorts.add(port);
-			nextPort++;
-			
+			// port = nextPort;
+			// peerPorts.add(port);
+			// nextPort++;
+			port = Integer.parseInt(peerId);
 			sev = new ServerSocket(port);
 			soc = new Socket();
 			myPeers = new ArrayList<Socket>();
 		}
 		catch (Exception e) {
+			//System.out.println("WTF");
 			e.printStackTrace();
 			System.exit(1);
 		}
 	}
 	
 	public void connect() {
+		//System.out.println("Test");
 		try {
-			for (int i = 0; i < peerPorts.size() && !soc.isConnected(); i++) {
-				System.out.println("I: " + i);
-				if (peerPorts.get(i) != port) {
-					soc = new Socket("localhost", peerPorts.get(i));
+			for (int i = 0; i < peerPorts.length; i++) { // && !soc.isConnected(); i++) {
+				System.out.print("PortMe: " + port + " To Port: " + peerPorts[i] );
+				if (peerPorts[i] != port) {
+					soc = new Socket("localhost", peerPorts[i]);
+					System.out.println(" Worked!");
 					System.out.println("Socket: " + soc.toString());
+				}
+				else {
+					System.out.println(" Failed!");
 				}
 			}
 		}
