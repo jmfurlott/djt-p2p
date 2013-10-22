@@ -5,6 +5,7 @@ import java.io.DataInputStream;
 import java.net.*;
 //import java.net.ServerSocket;
 import java.util.ArrayList;
+import java.util.logging.Logger;
 
 public class Peer {
 	private static int [] peerPorts = { 1001, 1002, 1003, 1004, 1005, 1006 };
@@ -29,7 +30,7 @@ public class Peer {
 			numConnectedSev = 1;
 			connected = new boolean [peerPorts.length];
 			for (int i = 0; i < peerPorts.length; i++) {
-				if (peersPorts[i] == port) {
+				if (peerPorts[i] == port) {
 					connected[i] = true;
 				}
 			}
@@ -67,13 +68,13 @@ public class Peer {
 	}
 	
 	public void accept() {
-		if (numConnected < peerPorts.length) { 
+		if (numConnectedSev < peerPorts.length) { 
 			try {
 				System.out.println("Waiting");
 				Socket p = sev.accept();
 				if (!myPeers.contains(p)) {
 					myPeers.add(p);
-					numConnected++;
+					numConnectedSev++;
 				}
 			}
 			catch (Exception e) {
