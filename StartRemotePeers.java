@@ -60,6 +60,7 @@ public class StartRemotePeers {
 			String path = "C:\\Users\\Ted Turner\\Documents\\GitHub\\djt-p2p";
 			
 			// start clients at remote hosts
+			Process[] processes = new Process[myStart.peerInfoVector.size()];
 			for (int i = 0; i < myStart.peerInfoVector.size(); i++) {
 				RemotePeerInfo pInfo = (RemotePeerInfo) myStart.peerInfoVector.elementAt(i);
 				
@@ -69,17 +70,17 @@ public class StartRemotePeers {
 				// If your program is JAVA, use this line.
 				//Runtime.getRuntime().exec("ssh " + pInfo.peerAddress + " cd " + path + "; java PeerProcess " + pInfo.peerId);
 				//Runtime.getRuntime().exec("cmd java C:\\Users\\Ted Turner\\Documents\\GitHub\\djt-p2p\\PeerProcess > C:\\Users\\Ted Turner\\Documents\\GitHub\\djt-p2p\\output.txt");
-				Process p = Runtime.getRuntime().exec("java PeerProcess " + pInfo.peerId);// + "; dir;");// java PeerProcess " + pInfo.peerId + " > output.txt");
+				processes[i] = Runtime.getRuntime().exec("java PeerProcess " + pInfo.peerId);// + "; dir;");// java PeerProcess " + pInfo.peerId + " > output.txt");
 				//Process p2 = Runtime.getRuntime().exec("cmd " + path);  
-				BufferedReader inStream = new BufferedReader(
-                                new InputStreamReader( p.getInputStream() ));  
-				//System.out.println(inStream.readLine());
-				String line = inStream.readLine();  
-				while (line != null) {  
+				// BufferedReader inStream = new BufferedReader(
+                                // new InputStreamReader( p.getInputStream() ));  
+				// System.out.println(inStream.readLine());
+				// String line = inStream.readLine();  
+				// while (line != null) {  
 					
-					System.out.println(line); 
-					line = inStream.readLine();					
-				}  
+					// System.out.println(line); 
+					// line = inStream.readLine();					
+				// }  
 				// Scanner in2 = new Scanner (p2.getInputStream());  
 				// String line2 = null;  
 				// while (in2.hasNext()) {  
@@ -90,7 +91,18 @@ public class StartRemotePeers {
 				
 				// If your program is C/C++, use this line instead of the above line. 
 				//Runtime.getRuntime().exec("ssh " + pInfo.peerAddress + " cd " + path + "; ./peerProcess " + pInfo.peerId);
-			}		
+			}	
+			for (int i = 0; i < processes.length; i++) {
+				System.out.println("Process " + i + " output");
+				BufferedReader inStream = new BufferedReader(
+                                 new InputStreamReader( processes[i].getInputStream() ));  
+				String line = inStream.readLine();  
+				while (line != null) {  
+					
+					System.out.println(line); 
+					line = inStream.readLine();					
+				}  
+			}
 			System.out.println("Starting all remote peers has done." );
 
 		}

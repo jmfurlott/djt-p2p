@@ -2,8 +2,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.DataOutputStream;
 import java.io.DataInputStream;
-import java.net.Socket;
-import java.net.ServerSocket;
+import java.net.*;
+//import java.net.ServerSocket;
 import java.util.ArrayList;
 
 public class Peer {
@@ -21,10 +21,12 @@ public class Peer {
 			// nextPort++;
 			port = Integer.parseInt(peerId);
 			sev = new ServerSocket(port);
+			//sev.setSoTimeout(100);
 			soc = new Socket();
 			myPeers = new ArrayList<Socket>();
 		}
 		catch (Exception e) {
+			System.out.println(e.toString());
 			//System.out.println("WTF");
 			e.printStackTrace();
 			System.exit(1);
@@ -37,9 +39,10 @@ public class Peer {
 			for (int i = 0; i < peerPorts.length; i++) { // && !soc.isConnected(); i++) {
 				System.out.print("PortMe: " + port + " To Port: " + peerPorts[i] );
 				if (peerPorts[i] != port) {
-					soc = new Socket("localhost", peerPorts[i]);
+					myPeers.add(new Socket("localhost", peerPorts[i]));
+					//soc.connect(new InetSocketAddress("localhost", peerPorts[i]));
 					System.out.println(" Worked!");
-					System.out.println("Socket: " + soc.toString());
+					System.out.println("Socket: " + myPeers.get(myPeers.size()-1).toString());
 				}
 				else {
 					System.out.println(" Failed!");
@@ -47,7 +50,8 @@ public class Peer {
 			}
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			System.out.println(e.toString());
+			// e.printStackTrace();
 			System.exit(1);
 		}
 	}
