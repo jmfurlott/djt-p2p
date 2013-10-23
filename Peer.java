@@ -15,7 +15,8 @@ public class Peer {
 	private int port;
 	private ServerSocket sev;
 	private Socket soc;
-	private ArrayList<Socket> myPeers;
+	private ArrayList<Socket> myPeersSev;
+	private ArrayList<Socket> myPeersCli;
 	private boolean [] connected;
 	private int numConnectedSev;
 	public Peer (String peerId) {
@@ -28,7 +29,8 @@ public class Peer {
 			sev = new ServerSocket(port);
 			//sev.setSoTimeout(100);
 			soc = new Socket();
-			myPeers = new ArrayList<Socket>();
+			myPeersSev = new ArrayList<Socket>();
+			myPeersCli = new ArrayList<Socket>();
 			numConnectedSev = 1;
 			connected = new boolean [peerPorts.length];
 			for (int i = 0; i < peerPorts.length; i++) {
@@ -51,10 +53,10 @@ public class Peer {
 			for (int i = 0; i < peerPorts.length; i++) { // && !soc.isConnected(); i++) {
 				System.out.print("PortMe: " + port + " To Port: " + peerPorts[i] );
 				if (!connected[i]) {
-					myPeers.add(new Socket("localhost", peerPorts[i]));
+					myPeersSev.add(new Socket("localhost", peerPorts[i]));
 					//soc.connect(new InetSocketAddress("localhost", peerPorts[i]));\=
 					System.out.println(" Worked!");
-					System.out.println("Socket: " + myPeers.get(myPeers.size()-1).toString());
+					System.out.println("Socket: " + myPeersSev.get(myPeersSev.size()-1).toString());
 					connected[i] = true;
 				}
 				else {
@@ -74,8 +76,8 @@ public class Peer {
 			try {
 				System.out.println("Waiting");
 				Socket p = sev.accept();
-				if (!myPeers.contains(p)) {
-					myPeers.add(p);
+				if (!myPeersCli.contains(p)) {
+					myPeersCli.add(p);
 					numConnectedSev++;
 				}
 			}
@@ -100,5 +102,20 @@ public class Peer {
 		}
 		return true;
 	}
-	
+	// public void sendToClient(String message) {
+		// DataOutputStream out = new DataOutputStream(client.getOutputStream());
+		// out.writeUTF(message);
+	// }
+	// public String receiveFromClient() {
+		// DataInputStream in = new DataInputStream(client.getInputStream());
+		// return in.readLine();
+	// }
+	// public void sendToServer(String message) {
+		// DataOutputStream out = new DataOutputStream(soc.getOutputStream());
+		// out.writeUTF(message);
+	// }
+	// public String receiveFromServer() {
+		// DataInputStream in =  new DataInputStream(soc.getInputStream());
+		// return in.readLine();
+	// }
 }
