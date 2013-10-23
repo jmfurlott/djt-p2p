@@ -71,23 +71,7 @@ public class StartRemotePeers {
 				//Runtime.getRuntime().exec("ssh " + pInfo.peerAddress + " cd " + path + "; java PeerProcess " + pInfo.peerId);
 				//Runtime.getRuntime().exec("cmd java C:\\Users\\Ted Turner\\Documents\\GitHub\\djt-p2p\\PeerProcess > C:\\Users\\Ted Turner\\Documents\\GitHub\\djt-p2p\\output.txt");
 				processes[i] = Runtime.getRuntime().exec("java PeerProcess " + pInfo.peerId);// + "; dir;");// java PeerProcess " + pInfo.peerId + " > output.txt");
-				//Process p2 = Runtime.getRuntime().exec("cmd " + path);  
-				// BufferedReader inStream = new BufferedReader(
-                                // new InputStreamReader( p.getInputStream() ));  
-				// System.out.println(inStream.readLine());
-				// String line = inStream.readLine();  
-				// while (line != null) {  
-					
-					// System.out.println(line); 
-					// line = inStream.readLine();					
-				// }  
-				// Scanner in2 = new Scanner (p2.getInputStream());  
-				// String line2 = null;  
-				// while (in2.hasNext()) {  
-					// line2 = in2.nextLine();
-					// System.out.println(line2);  
-				// }  
-				//Runtime.getRuntime().exec("cmd dir > output.txt");
+				
 				
 				// If your program is C/C++, use this line instead of the above line. 
 				//Runtime.getRuntime().exec("ssh " + pInfo.peerAddress + " cd " + path + "; ./peerProcess " + pInfo.peerId);

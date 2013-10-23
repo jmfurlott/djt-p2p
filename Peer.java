@@ -5,7 +5,9 @@ import java.io.DataInputStream;
 import java.net.*;
 //import java.net.ServerSocket;
 import java.util.ArrayList;
-import java.util.logging.Logger;
+import java.util.Arrays;
+
+
 
 public class Peer {
 	private static int [] peerPorts = { 1001, 1002, 1003, 1004, 1005, 1006 };
@@ -50,7 +52,7 @@ public class Peer {
 				System.out.print("PortMe: " + port + " To Port: " + peerPorts[i] );
 				if (!connected[i]) {
 					myPeers.add(new Socket("localhost", peerPorts[i]));
-					//soc.connect(new InetSocketAddress("localhost", peerPorts[i]));
+					//soc.connect(new InetSocketAddress("localhost", peerPorts[i]));\=
 					System.out.println(" Worked!");
 					System.out.println("Socket: " + myPeers.get(myPeers.size()-1).toString());
 					connected[i] = true;
@@ -61,7 +63,7 @@ public class Peer {
 			}
 		}
 		catch (Exception e) {
-			System.out.println(e.toString());
+			System.out.println("\n"+Arrays.toString(e.getStackTrace()));
 			// e.printStackTrace();
 			System.exit(1);
 		}
@@ -84,10 +86,10 @@ public class Peer {
 		}
 	}
 	public boolean serverFullyConnected() {
-		if (myPeers.size() == peerPorts.length-1) {
-			return true;
+		if (numConnectedSev < peerPorts.length) {
+			return false;
 		}
-		return false;
+		return true;
 	}
 	
 	public boolean socketsFullyConnected() {

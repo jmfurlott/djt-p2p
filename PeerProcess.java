@@ -11,10 +11,12 @@ public class PeerProcess {
 		System.out.println("Running");
 		//System.out.println(Arrays.toString(args));
 		Peer peer = new Peer(args[0]);
-		while (!peer.serverFullyConnected() && !peer.socketsFullyConnected()) {
+		while (!peer.serverFullyConnected() || !peer.socketsFullyConnected()) {
 		//System.out.println("TY");
-			peer.connect();
-			peer.accept();
+			if (!peer.socketsFullyConnected())
+				peer.connect();
+			if (!peer.serverFullyConnected())
+				peer.accept();
 		}
 	}
 	
