@@ -18,6 +18,11 @@ public class PeerProcess {
 			if (!peer.serverFullyConnected())
 				peer.accept();
 		}
+		for (int i = 0; i < peer.myPeersSize(); i++) {
+			peer.sendHandShakeToPeer(i);
+		}
+		for (int i = 0; i < peer.myServersSize(); i++) {
+			peer.receiveHandShakeFromPeer(i);
+		}
 	}
-	
 }
