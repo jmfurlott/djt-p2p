@@ -18,11 +18,19 @@ public class PeerProcess {
 			if (!peer.serverFullyConnected())
 				peer.accept();
 		}
-		for (int i = 0; i < peer.myPeersSize(); i++) {
-			peer.sendHandShakeToPeer(i);
+		System.out.println("Your mother");
+		try {
+			for (int i = 0; i < peer.myPeersSize(); i++) {
+				peer.sendHandShakeToPeer(i);
+			}
+			for (int i = 0; i < peer.myInputsSize(); i++) {
+				peer.receiveHandShakeFromPeer(i);
+			}
 		}
-		for (int i = 0; i < peer.myServersSize(); i++) {
-			peer.receiveHandShakeFromPeer(i);
+		catch (Exception e){
+			System.out.println("\n"+Arrays.toString(e.getStackTrace()));
+			// e.printStackTrace();
+			System.exit(1);
 		}
 	}
 }

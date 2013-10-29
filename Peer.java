@@ -19,10 +19,12 @@ public class Peer {
 	//private ServerSocket sev;
 	//private Socket soc;
 	private ArrayList<Socket> myPeers;
+	private ArrayList<Socket> myInputs;
 	private ServerSocket [] myServers;
 	//private ArrayList<Socket> myPeersCli;
 	private boolean [] connected;
 	private int numConnectedSev;
+	private boolean [] connectedServers;
 	private HashMap<String, Integer> mapPeers = new HashMap<String, Integer>();
 	public Peer (String peerId) {
 		//System.out.println("Test");
@@ -36,8 +38,10 @@ public class Peer {
 			//sev.setSoTimeout(100);
 			//soc = new Socket();
 			myServers = new ServerSocket[5];
+			connectedServers = new boolean [myServers.length];
 			
 			myPeers = new ArrayList<Socket>();
+			myInputs = new ArrayList<Socket>();
 			//myPeersCli = new ArrayList<Socket>();
 			numConnectedSev = 1;
 			connected = new boolean [peerPorts.length];
@@ -47,9 +51,9 @@ public class Peer {
 					connected[i] = true;
 				}
 				else {
-					System.out.println("HERE");
+					//System.out.println("HERE");
 					myServers[k++] = createServer("localhost", peerPorts[i]);
-					System.out.println("NOT HERE");
+					//System.out.println("NOT HERE");
 				}
 			}
 		}
@@ -90,10 +94,14 @@ public class Peer {
 			try {
 				for (int i = 0; i < myServers.length; i++) {
 					//System.out.println("Server " + myServers[i] + " is Waiting");
-					myServers[i].accept();
+					if (!connectedServers[i]) { 
+						myInputs.add(myServers[i].accept());
+						connectedServers[i] = true;
+						numConnectedSev++;
+					}
 					//if (!myPeers.contains(p)) {
 						//myPeersCli.add(p);
-					numConnectedSev++;
+					
 				}
 				//}
 			}
@@ -122,6 +130,7 @@ public class Peer {
 		try {
 			System.out.println("Trying to send");
 			Socket p = myPeers.get(index);
+			System.out.println(p+"");
 			byte[] message = new byte[32];
 			message[0] = 'H';
 			message[1] = 'E';
@@ -140,7 +149,7 @@ public class Peer {
 	}
 	public void receiveHandShakeFromPeer(int index) {
 		try {
-			Socket p = myPeers.get(index);
+			Socket p =myInputs.get(index);
 			byte[] message = new byte[5];
 			DataInputStream in = new DataInputStream(p.getInputStream());
 			System.out.println("Before Read");
@@ -187,8 +196,8 @@ public class Peer {
 	public int myPeersSize() {
 		return myPeers.size();
 	}
-	public int myServersSize() {
-		return myServers.length;
+	public int myInputsSize() {
+		return myInputs.size();
 	}
 	public ServerSocket createServer(String host, int port) throws Exception{
 		ServerSocket ss = new ServerSocket();
