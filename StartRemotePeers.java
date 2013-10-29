@@ -57,7 +57,7 @@ public class StartRemotePeers {
 			myStart.getConfiguration();
 					
 			// get current path
-			String path = "C:\\Users\\Ted Turner\\Documents\\GitHub\\djt-p2p";
+			String path = ".";
 			
 			// start clients at remote hosts
 			Process[] processes = new Process[myStart.peerInfoVector.size()];

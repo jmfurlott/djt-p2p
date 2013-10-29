@@ -3,7 +3,6 @@ import java.io.OutputStream;
 import java.io.DataOutputStream;
 import java.io.DataInputStream;
 import java.net.*;
-//import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -11,34 +10,27 @@ import java.util.HashMap;
 
 
 public class Peer {
-	private static int [] peerPorts = { 11, 12, 13, 14, 15, 16 };
-	// private static int nextPort = 0;
+	private static int [] peerPorts = { 11, 12, 13, 14, 15, 16};
+
 	private int port;
 	private String peerId;
-	//private ServerSocket sev;
-	//private Socket soc;
+
 	private ArrayList<Socket> myPeers;
 	private ServerSocket [] myServers;
-	//private ArrayList<Socket> myPeersCli;
 	private boolean [] connected;
 	private int numConnectedSev;
 	private HashMap<String, Integer> mapPeers = new HashMap<String, Integer>();
 	public Peer (String peerId) {
 		//System.out.println("Test");
 		try {
-			// port = nextPort;
-			// peerPorts.add(port);
-			// nextPort++;
 			port = Integer.parseInt(peerId);
 			this.peerId = peerId;
-			//sev = new ServerSocket(port);
-			//sev.setSoTimeout(100);
-			//soc = new Socket();
+			
 			myServers = new ServerSocket[5];
 			
 			myPeers = new ArrayList<Socket>();
-			//myPeersCli = new ArrayList<Socket>();
-			numConnectedSev = 1;
+
+			numConnectedSev = 0;
 			connected = new boolean [peerPorts.length];
 			int k = 0;
 			for (int i = 0; i < peerPorts.length; i++) {
@@ -46,13 +38,15 @@ public class Peer {
 					connected[i] = true;
 				}
 				else {
-					myServers[k++] = new ServerSocket(createAddressPort(peerPorts[i]));
+					System.out.println("ServerSocket: " + createAddressPort(peerPorts[i]));
+					myServers[k] = new ServerSocket(createAddressPort(peerPorts[i]));
+					myServers[k].setSoTimeout(500);
+					k++;
 				}
 			}
 		}
 		catch (Exception e) {
 			System.out.println(e.toString());
-			//System.out.println("WTF");
 			e.printStackTrace();
 			System.exit(1);
 		}
@@ -62,23 +56,32 @@ public class Peer {
 		//System.out.println("Test");
 		try {
 			for (int i = 0; i < peerPorts.length; i++) { // && !soc.isConnected(); i++) {
-				System.out.print("PortMe: " + port + " To Port: " + peerPorts[i] );
+				System.out.println("PortMe: " + port + " To Port: " + peerPorts[i] );
 				if (!connected[i]) {
+					System.out.println("PeerPort: " + createToPort(peerPorts[i]));
 					myPeers.add(new Socket("localhost", createToPort(peerPorts[i])));
 					//soc.connect(new InetSocketAddress("localhost", peerPorts[i]));\=
 					System.out.println(" Worked!");
 					System.out.println("Socket: " + myPeers.get(myPeers.size()-1).toString());
 					connected[i] = true;
 				}
+
 				else {
 					System.out.println(" Failed!");
 				}
 			}
 		}
 		catch (Exception e) {
-			System.out.println("\n"+Arrays.toString(e.getStackTrace()));
-			// e.printStackTrace();
-			System.exit(1);
+			System.out.println("Exception on port: " + port);
+			//if (myPeers.get(myPeers.size()-1) != null) {
+			//	System.out.println("End of myPeers: " + myPeers.get(myPeers.size()-1));
+			//}
+			//else {
+			//	System.out.println("End of myPeers: null");
+			//}
+			//System.out.println("\n"+Arrays.toString(e.getStackTrace()));
+			//e.printStackTrace();
+			//System.exit(1);
 		}
 	}
 	
