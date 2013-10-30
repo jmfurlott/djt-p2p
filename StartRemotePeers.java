@@ -55,9 +55,13 @@ public class StartRemotePeers {
 		try {
 			StartRemotePeers myStart = new StartRemotePeers();
 			myStart.getConfiguration();
-					
+			String arrG = "";		
 			// get current path
 			String path = ".";
+			
+			for (int j = 0; j < myStart.peerInfoVector.size(); j++) {
+				arrG += " " + myStart.peerInfoVector.elementAt(j).peerId;	
+			}
 			
 			// start clients at remote hosts
 			Process[] processes = new Process[myStart.peerInfoVector.size()];
@@ -70,7 +74,9 @@ public class StartRemotePeers {
 				// If your program is JAVA, use this line.
 				//Runtime.getRuntime().exec("ssh " + pInfo.peerAddress + " cd " + path + "; java PeerProcess " + pInfo.peerId);
 				//Runtime.getRuntime().exec("cmd java C:\\Users\\Ted Turner\\Documents\\GitHub\\djt-p2p\\PeerProcess > C:\\Users\\Ted Turner\\Documents\\GitHub\\djt-p2p\\output.txt");
-				processes[i] = Runtime.getRuntime().exec("java PeerProcess " + pInfo.peerId);// + "; dir;");// java PeerProcess " + pInfo.peerId + " > output.txt");
+				
+				
+				processes[i] = Runtime.getRuntime().exec("java PeerProcess " + pInfo.peerId + arrG);// + "; dir;");// java PeerProcess " + pInfo.peerId + " > output.txt");
 				
 				
 				// If your program is C/C++, use this line instead of the above line. 
@@ -87,6 +93,8 @@ public class StartRemotePeers {
 					line = inStream.readLine();					
 				}  
 			}
+			
+			//Thread.sleep(5000);
 			System.out.println("Starting all remote peers has done." );
 
 		}
