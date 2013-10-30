@@ -10,7 +10,7 @@ public class MySocket {
 		try {
 			Socket soc = new Socket("localhost", 100);
 			DataOutputStream out = new DataOutputStream(soc.getOutputStream());
-			out.writeUTF("Sup derek");
+			out.writeUTF("Socket Test");
 			DataInputStream in =  new DataInputStream(soc.getInputStream());
 			String re = in.readUTF();
 			System.out.println("Message from server: " + re);

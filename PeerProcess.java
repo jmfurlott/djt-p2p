@@ -19,7 +19,7 @@ public class PeerProcess {
 				peer.accept();
 		}
 		
-		System.out.println("Your mother is a hamster");
+		System.out.println("Attempt to Send Handshake to Peers");
 		try {
 			for (int i = 0; i < peer.myPeersSize(); i++) {
 				peer.sendHandShakeToPeer(i);
@@ -27,6 +27,23 @@ public class PeerProcess {
 			
 			for (int i = 0; i < peer.myInputsSize(); i++) {
 				peer.receiveHandShakeFromPeer(i);
+			}
+		}
+		catch (Exception e){
+			System.out.println("\n"+Arrays.toString(e.getStackTrace()));
+			// e.printStackTrace();
+			System.exit(1);
+		}
+		
+		//Eventually merge this with above loops.. but for now, keep seperate for testing purposes
+		System.out.println("Simulate bitfield messages");
+		try {
+			for (int i = 0; i < peer.myPeersSize(); i++) {
+				peer.sendBitfieldMessageToPeer(i);
+			}
+			
+			for (int i = 0; i < peer.myInputsSize(); i++) {
+				peer.receiveBitfieldMessageFromPeer(i);
 			}
 		}
 		catch (Exception e){

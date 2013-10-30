@@ -160,7 +160,7 @@ public class Peer {
 	}
 	public void sendHandShakeToPeer(int index) {
 		try {
-			System.out.println("Trying to send");
+			System.out.println("Trying to send handshake");
 			Socket p = myPeers.get(index);
 			System.out.println(p+"");
 			byte[] message = new byte[32];
@@ -191,9 +191,9 @@ public class Peer {
 			Socket p =myInputs.get(index);
 			byte[] message = new byte[5];
 			DataInputStream in = new DataInputStream(p.getInputStream());
-			System.out.println("Before Read");
+			System.out.println("Before Read Handshake");
 			in.read(message, 0, 5);
-			System.out.println("After Read");
+			System.out.println("After Read Handshake");
 			if ("HELLO".equals(new String(message))) {
 				System.out.println("HELLO received, attempting to read rest of message");
 				//bufferWritter.write("HELLO received");
@@ -210,6 +210,76 @@ public class Peer {
 				int i = lengthOfMessage(message);
 				in.read(new byte[i], 0, i);
 			}
+
+			//System.out.println("Handshake received and processed by peer " + index);
+		} catch (Exception e) {
+			System.out.println("\n"+Arrays.toString(e.getStackTrace()));
+			// e.printStackTrace();
+			System.exit(1);
+		}
+	}
+	
+	//Currently setting an empty bitfield message
+	public void sendBitfieldMessageToPeer(int index) {
+		try {
+			System.out.println("Trying to send bitfield message");
+			Socket p = myPeers.get(index);
+			System.out.println(p+"");
+			byte[] message = new byte[5];
+			message[0] = '0';
+			message[1] = '0';
+			message[2] = '0';
+			message[3] = '0';
+			message[4] = '5';
+			DataOutputStream out = new DataOutputStream(p.getOutputStream());
+			out.write(message, 0, 5);
+			//The last 4 bytes hold the peerId in string form
+			out.write(peerId.getBytes(), 0, 4);
+
+			System.out.println("Sent " + new String(message) + " with pId " +peerId + " to " + myPeers.get(index));
+		} catch (Exception e) {
+			System.out.println("****\n"+Arrays.toString(e.getStackTrace()));
+			// e.printStackTrace();
+			System.exit(1);
+		}
+	}
+	
+	/* Receives the HandShake message from peer
+	* 
+	*
+	*/
+	public void receiveBitfieldMessageFromPeer(int index) {
+		try {
+			Socket p =myInputs.get(index);
+			byte[] messageLength = new byte[4];
+			byte[] messageType = new byte[1];
+			DataInputStream in = new DataInputStream(p.getInputStream());
+			System.out.println("Before Reading Bitfield Message");
+			in.read(messageLength, 0, 4);
+			in.read(messageType, 0, 1);
+			System.out.println("After Reading Bitfield Message");
+			
+			if ("5".equals(new String(messageType))) {
+				System.out.println("***Confirmation, bitfield message received");
+			
+			}
+			
+			//if ("HELLO".equals(new String(message))) {
+			//	System.out.println("HELLO received, attempting to read rest of message");
+			//	//bufferWritter.write("HELLO received");
+			//	in.read(new byte[27], 0, 27);
+			//	byte [] id = new byte[4];
+			//	in.read(id, 0, 4);
+			//	String pId = new String(id);
+			//	//String pId = "11"; //hardcoded an 11, will work on this next TODO
+			//	mapPeers.put(pId, index);
+			//	System.out.println("Bitfield message received from " + pId + " by " + peerId);
+			//}
+			//else {
+			//	System.out.println("This is not a bitfield message..., attempting to read rest of message");
+			//	int i = lengthOfMessage(message);
+			//	in.read(new byte[i], 0, i);
+			//}
 
 			//System.out.println("Handshake received and processed by peer " + index);
 		} catch (Exception e) {
