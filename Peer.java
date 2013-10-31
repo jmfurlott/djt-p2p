@@ -28,7 +28,7 @@ Peer Class
 public class Peer {
 	//private final static Logger LOGGER = Logger.getLogger(Peer.class .getName());
 	//Logger set up
-	private PrintWriter out;
+	private PrintWriter logger;
 	
 	//TODO, need to have these data driven from config
 	//TODO, simply need to add args to the peer constructor
@@ -53,7 +53,7 @@ public class Peer {
 			if (peerId != null) {
 				String helper = "logs/log_peer_" + peerId + ".txt";
 
-				PrintWriter out = new PrintWriter(new FileWriter(helper, true)); 
+				logger = new PrintWriter(new FileWriter(helper, true)); 
 				//out.println("Hello world "); 
 				//out.println("Logger version 1.0"); 
 				//out.close();
@@ -145,6 +145,9 @@ public class Peer {
 					
 					if (!connectedServers[i]) {
 						myInputs.add(myServers[i].accept());
+						
+						//logger.println("[Time]: Peer [" + peerId + "] makes a connection to Peer [blank]");
+						//logger.println("TEST");
 						//if (!myPeers.contains(p)) {
 							//myPeersCli.add(p);
 						numConnectedSev++;
