@@ -96,7 +96,8 @@ public class StartRemotePeers {
 			//Thread.sleep(5000); TODO I don't think this is necessary anymore
 			System.out.println("Starting all remote peers has done." );
 			
-			myStart.getCommonConfiguration();
+			//TODO make this right
+			//myStart.getCommonConfiguration();
 
 		}
 		catch (Exception ex) {
