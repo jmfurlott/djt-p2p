@@ -383,4 +383,28 @@ public class Peer {
 		ss.setSoTimeout(1000);
 		return ss;
 	}
+	
+	public Message createMessage(byte [] message) {
+		int type = Message.getTypeOfMessage(message);
+		switch (type) {
+			case 0: return ChokeMessage.createMessage(message);
+					
+			case 1: return UnchokeMessage.createMessage(message);
+					
+			case 2: return InterestedMessage.createMessage(message);
+					
+			case 3: return NotInterestedMessage.createMessage(message);
+					
+			case 4: return HaveMessage.createMessage(message);
+					
+			case 5: return BitfieldMessage.createMessage(message);
+					
+			case 6: return RequestMessage.createMessage(message);
+					
+			case 7: return PieceMessage.createMessage(message);
+					
+			default: return null;
+					
+		}
+	}
 }

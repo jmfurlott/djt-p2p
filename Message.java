@@ -1,7 +1,7 @@
 import java.nio.ByteBuffer;
 
 public abstract class Message {
-	byte [] message;
+	protected byte [] message;
 	
 	public int getMessageLength() {
 		/* 
@@ -35,7 +35,13 @@ public abstract class Message {
 		return message[4];
 	}
 	
-	public abstract Message createMessage(byte [] message);
+	public static int getTypeOfMessage(byte [] message) {
+		return new Integer(message[4]);
+	}
+	
+	public static Message createMessage(byte [] message) {
+		return null;
+	}
 	
 	
 }
