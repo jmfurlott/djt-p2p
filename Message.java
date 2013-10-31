@@ -1,3 +1,5 @@
+import java.nio.ByteBuffer;
+
 public abstract class Message {
 	byte [] message;
 	
@@ -22,7 +24,7 @@ public abstract class Message {
 		/* 
 			Gets the actual message
 		*/
-		int length = lengthOfMessage();
+		int length = getMessageLength();
 		return ByteBuffer.wrap(message, 4, length);
 	}
 	
