@@ -12,6 +12,7 @@ import java.nio.ByteBuffer;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.BufferedWriter;
+import java.io.PrintWriter;
 import java.io.IOException;
 
 /*
@@ -27,10 +28,7 @@ Peer Class
 public class Peer {
 	//private final static Logger LOGGER = Logger.getLogger(Peer.class .getName());
 	//Logger set up
-	File file;
-	FileWriter fileWritter;
-	BufferedWriter bufferWritter;
-	
+	private PrintWriter out;
 	
 	//TODO, need to have these data driven from config
 	//TODO, simply need to add args to the peer constructor
@@ -51,12 +49,17 @@ public class Peer {
 	public Peer (String[] args) {
 		//System.out.println("Test");
 		try {
-			//File file = new File("logFile.txt");
-			//FileWriter fileWritter = new FileWriter(file.getName(), true);
-			//BufferedWriter bufferWritter = new BufferedWriter(fileWritter);
-		
-		
 			String peerId = args[0];
+			if (peerId != null) {
+				String helper = "logs/log_peer_" + peerId + ".txt";
+
+				PrintWriter out = new PrintWriter(new FileWriter(helper, true)); 
+				//out.println("Hello world "); 
+				//out.println("Logger version 1.0"); 
+				//out.close();
+
+				//System.out.println("Log file established: " + helper);
+			}
 			
 			peerPorts = new int[args.length-1];
 			for (int i = 1; i < args.length; i++) {
