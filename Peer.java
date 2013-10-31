@@ -94,6 +94,10 @@ public class Peer {
 	}
 	
 	public void connect() {
+		/*
+			Connects all the Peer's myPeers sockets to the other 
+			processes server sockets
+		*/
 		//System.out.println("Test");
 		try {
 			for (int i = 0; i < peerPorts.length; i++) { // && !soc.isConnected(); i++) {
@@ -127,6 +131,10 @@ public class Peer {
 	}
 	
 	public void accept() {
+		/*
+			Accepts the connection to each of the Peer's ServerSockets
+			from the other processes Sockets
+		*/
 		if (numConnectedSev < peerPorts.length) { 
 			try {
 				for (int i = 0; i < myServers.length; i++) {
@@ -149,6 +157,9 @@ public class Peer {
 		}
 	}
 	public boolean serverFullyConnected() {
+		/* 
+			Checks to see if the ServerSockets have all been connected too
+		*/
 		if (numConnectedSev < peerPorts.length) {
 			return false;
 		}
@@ -156,6 +167,9 @@ public class Peer {
 	}
 	
 	public boolean socketsFullyConnected() {
+		/* 
+			Checks to see if the Sockets have all been connected to a ServerSocket
+		*/
 		for (int i = 0; i < connected.length; i++) {
 			if (!connected[i]) {
 				return false;
@@ -164,6 +178,9 @@ public class Peer {
 		return true;
 	}
 	public void sendHandShakeToPeer(int index) {
+		/* 
+			Sends a Hand Shake message to one of it's Peers
+		*/
 		try {
 			System.out.println("Trying to send handshake");
 			Socket p = myPeers.get(index);
@@ -255,8 +272,8 @@ public class Peer {
 		}
 	}
 	
-	/* Receives the HandShake message from peer
-	* 
+	/* Receives the Bitfield message from peer
+	*  Note: should only be received one time per peer
 	*
 	*/
 	public void receiveBitfieldMessageFromPeer(int index) {
@@ -320,23 +337,41 @@ public class Peer {
 	//}
 	
 	public int lengthOfMessage(byte[] bytes) {
+		/* 
+			returns the length message sent by looking at the first 4 bytes
+		*/
 		ByteBuffer bb = ByteBuffer.wrap(bytes, 0, 4);
 		return bb.getInt();
 	}
 	public int myPeersSize() {
+		/* 
+			returns how many Peers this Peer has
+		*/
 		return myPeers.size();
 	}
 	public int myInputsSize() {
+		/* 
+			returns how many Sockets this Peer will be receiving input from
+		*/
 		return myInputs.size();
 	}
 	
 	public int createToPort(int port) {
+		/* 
+			creates a unique port so the Socket can be identified easily
+		*/
 		return Integer.parseInt(port+ "" + myPort);
 	}
 	public int createAddressPort(int port) {
+		/* 
+			creates a unique port so the ServerSocket can be identified easily
+		*/
 		return Integer.parseInt(myPort+ "" + port);
 	}
 	public ServerSocket createServer(String host, int port) throws Exception{
+		/* 
+			creates a ServerSocket with a timeout of 1 second
+		*/
 		ServerSocket ss = new ServerSocket();
 		ss.bind(new InetSocketAddress("localhost", createAddressPort(port)));
 		ss.setSoTimeout(1000);
