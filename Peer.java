@@ -15,8 +15,13 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 
 /*
-
-
+Peer Class
+-Instances of this class will be running on all of the different user machines
+-Currently, all of the instances are running on different local ports
+-TODO next step is to either
+	-Continue development with localhost operations
+	-Move to developing with truly remote peers
+-Leaning towards the latter
 */
 
 public class Peer {
@@ -226,17 +231,23 @@ public class Peer {
 			Socket p = myPeers.get(index);
 			System.out.println(p+"");
 			byte[] message = new byte[5];
-			message[0] = '0';
-			message[1] = '0';
-			message[2] = '0';
-			message[3] = '0';
+			
+			//TODO currently hardcoding in a message size
+			//simply to identify who is sending the message
+			//in the future, this needs to be defined based on
+			//the common configuration data & the peers current
+			//file piece status
+			message[0] = (byte) index;
+			message[1] = (byte) index;
+			message[2] = (byte) index;
+			message[3] = (byte) index;
 			message[4] = '5';
 			DataOutputStream out = new DataOutputStream(p.getOutputStream());
 			out.write(message, 0, 5);
 			//The last 4 bytes hold the peerId in string form
 			out.write(peerId.getBytes(), 0, 4);
 
-			System.out.println("Sent " + new String(message) + " with pId " +peerId + " to " + myPeers.get(index));
+			//System.out.println("Sent " + new String(message) + " with pId " +peerId + " to " + myPeers.get(index));
 		} catch (Exception e) {
 			System.out.println("****\n"+Arrays.toString(e.getStackTrace()));
 			// e.printStackTrace();
@@ -249,6 +260,10 @@ public class Peer {
 	*
 	*/
 	public void receiveBitfieldMessageFromPeer(int index) {
+		int helper[] = new int[4];
+		int messagePayloadSize = 0;
+		int pow;
+	
 		try {
 			Socket p =myInputs.get(index);
 			byte[] messageLength = new byte[4];
@@ -260,28 +275,33 @@ public class Peer {
 			System.out.println("After Reading Bitfield Message");
 			
 			if ("5".equals(new String(messageType))) {
-				System.out.println("***Confirmation, bitfield message received");
-			
+				System.out.println("Confirmation, bitfield message received");
+				
+				helper[0] = messageLength[0];
+				helper[1] = messageLength[1];
+				helper[2] = messageLength[2];
+				helper[3] = messageLength[3];
+				
+				for (int i = 0; i < 4; i++) {
+					pow = 1;
+				
+					for (int j = 3; j > i; j--) {
+						pow = pow * 256;
+					}
+				
+					messagePayloadSize += helper[i]*pow;
+				}
+				
+				
+				System.out.println("Message payload size = " + messagePayloadSize);
+				System.out.println(" " + helper[0] + " " + helper[1] + " " + helper[2] + " " + helper[3]);	
+				
 			}
 			
-			//if ("HELLO".equals(new String(message))) {
-			//	System.out.println("HELLO received, attempting to read rest of message");
-			//	//bufferWritter.write("HELLO received");
-			//	in.read(new byte[27], 0, 27);
-			//	byte [] id = new byte[4];
-			//	in.read(id, 0, 4);
-			//	String pId = new String(id);
-			//	//String pId = "11"; //hardcoded an 11, will work on this next TODO
-			//	mapPeers.put(pId, index);
-			//	System.out.println("Bitfield message received from " + pId + " by " + peerId);
-			//}
-			//else {
-			//	System.out.println("This is not a bitfield message..., attempting to read rest of message");
-			//	int i = lengthOfMessage(message);
-			//	in.read(new byte[i], 0, i);
-			//}
+			else {
+				System.out.println("Not a bitfield message");
+			}
 
-			//System.out.println("Handshake received and processed by peer " + index);
 		} catch (Exception e) {
 			System.out.println("\n"+Arrays.toString(e.getStackTrace()));
 			// e.printStackTrace();

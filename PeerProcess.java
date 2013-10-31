@@ -53,4 +53,23 @@ public class PeerProcess {
 		}
 	}
 	
+	//Read in the common configuration seperately for now
+	//TODO add to the other configuration, or establish a better naming convention
+	public void getCommonConfiguration() {
+		String st;
+
+		try {
+			BufferedReader in = new BufferedReader(new FileReader("Common.cfg"));
+			while((st = in.readLine()) != null) {
+				String[] tokens = st.split("\\s+");
+				System.out.println(st);
+			}
+			
+			in.close();
+		}
+		catch (Exception ex) {
+			System.out.println(ex.toString());
+		}
+	}
+	
 }

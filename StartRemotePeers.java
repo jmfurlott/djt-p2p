@@ -20,8 +20,7 @@ public class StartRemotePeers {
 
 	public Vector<RemotePeerInfo> peerInfoVector;
 	
-	public void getConfiguration()
-	{
+	public void getConfiguration() {
 		String st;
 		int i1;
 		peerInfoVector = new Vector<RemotePeerInfo>();
@@ -56,7 +55,7 @@ public class StartRemotePeers {
 			StartRemotePeers myStart = new StartRemotePeers();
 			myStart.getConfiguration();
 			String arrG = "";		
-			// get current path
+			// get relative path, so only needs .
 			String path = ".";
 			
 			for (int j = 0; j < myStart.peerInfoVector.size(); j++) {
@@ -76,8 +75,8 @@ public class StartRemotePeers {
 				//Runtime.getRuntime().exec("cmd java C:\\Users\\Ted Turner\\Documents\\GitHub\\djt-p2p\\PeerProcess > C:\\Users\\Ted Turner\\Documents\\GitHub\\djt-p2p\\output.txt");
 				
 				
-				processes[i] = Runtime.getRuntime().exec("java PeerProcess " + pInfo.peerId + arrG);// + "; dir;");// java PeerProcess " + pInfo.peerId + " > output.txt");
-				
+				processes[i] = Runtime.getRuntime().exec("java PeerProcess " + pInfo.peerId + arrG);
+				// + "; dir;");// java PeerProcess " + pInfo.peerId + " > output.txt");
 				
 				// If your program is C/C++, use this line instead of the above line. 
 				//Runtime.getRuntime().exec("ssh " + pInfo.peerAddress + " cd " + path + "; ./peerProcess " + pInfo.peerId);
@@ -94,8 +93,10 @@ public class StartRemotePeers {
 				}  
 			}
 			
-			//Thread.sleep(5000);
+			//Thread.sleep(5000); TODO I don't think this is necessary anymore
 			System.out.println("Starting all remote peers has done." );
+			
+			myStart.getCommonConfiguration();
 
 		}
 		catch (Exception ex) {
