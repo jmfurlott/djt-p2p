@@ -11,6 +11,10 @@ public abstract class Message {
 		return bb.getInt();
 	}
 	
+	public int getMessageLength (byte [] messageLength) {
+		ByteBuffer bb = ByteBuffer.wrap(messageLength, 0, 4);
+		return bb.getInt();
+	}
 	public void setMessageLength(int length) {
 		/* 
 			Sets message length, e.g., the first four bytes to the inputed int
@@ -35,13 +39,15 @@ public abstract class Message {
 		return message[4];
 	}
 	
-	public static int getTypeOfMessage(byte [] message) {
-		return new Integer(message[4]);
+	public static int getTypeOfMessage(byte message) {
+		return new Integer(message);
 	}
 	
 	public static Message createMessage(byte [] message) {
 		return null;
 	}
+	
+	public abstract /* something */ void receiveMessage(byte [] messageLength, DataInputStream in);
 	
 	
 }
