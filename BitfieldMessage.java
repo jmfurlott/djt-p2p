@@ -12,5 +12,7 @@ public class BitfieldMessage extends Message{
 		byte [] mess = new byte [length];
 		in.read(mess, 0, length);
 		System.out.println("Weee " + length + " Received " + new String(mess));
+		
+		// functionality
 	}
 }
