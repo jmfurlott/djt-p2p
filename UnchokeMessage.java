@@ -1,3 +1,5 @@
+import java.io.DataInputStream;
+
 public class UnchokeMessage extends Message{
 	public UnchokeMessage () {
 	
@@ -8,11 +10,26 @@ public class UnchokeMessage extends Message{
 		return me;
 	}
 	
+	public static Message createMessage() {
+		return new UnchokeMessage();
+	}
+	
 	public void receiveMessage(byte[] messageLength, DataInputStream in) {
-		int length = getMessageLength(messageLength);
-		byte[] mess = new byte[length];
-		in.read(mess, 0, length);
-		
-		System.out.println("Message Length: " + length +", Received: " + new String[mess]);
+		try {
+			int length = getMessageLength(messageLength);
+			byte[] mess = new byte[length];
+			in.read(mess, 0, length);
+			
+			System.out.println("Message Length: " + length +", Received: " + new String(mess));
+		} catch (Exception e) {
+			//something
+		}
+	}
+	
+	public byte [] sendMessage() {
+		//do something
+		return "BitFieldMessage".getBytes();
+		//return messageBody;
+	
 	}
 }

@@ -1,4 +1,5 @@
 import java.nio.ByteBuffer;
+import java.io.DataInputStream;
 
 public abstract class Message {
 	protected byte [] message;
@@ -49,5 +50,5 @@ public abstract class Message {
 	
 	public abstract /* something */ void receiveMessage(byte [] messageLength, DataInputStream in);
 	
-	
+	public abstract byte [] sendMessage();
 }

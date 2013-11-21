@@ -42,11 +42,11 @@ public class PeerProcess {
 		System.out.println("Simulate bitfield messages");
 		try {
 			for (int i = 0; i < peer.myPeersSize(); i++) {
-				peer.sendBitfieldMessageToPeer(i);
+				peer.sendMessageToPeer(i, (byte)5);
 			}
 			
 			for (int i = 0; i < peer.myInputsSize(); i++) {
-				peer.receiveBitfieldMessageFromPeer(i);
+				peer.receiveMessageFromPeer(i);
 			}
 		}
 		catch (Exception e){

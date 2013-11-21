@@ -264,9 +264,52 @@ public class Peer {
 			System.exit(1);
 		}
 	}
+	public void sendMessageToPeer(int index, byte type) {
+		try {
+			Socket p = myPeers.get(index);
+			byte[] messageLength = new byte[4];
+			byte[] messageType = new byte[1];
+			messageType[0] = type;
+			Message m = createMessage(messageType[0]);
+			byte [] messageBody = m.sendMessage();
+
+			messageLength = intToByte(messageBody.length);
+			
+			DataOutputStream out = new DataOutputStream(p.getOutputStream());
+			//System.out.println("Before Reading Bitfield Message");
+			out.write(messageLength, 0, 4);
+			out.write(messageType, 0, 1);
+			out.write(messageBody, 0, messageBody.length);
+			
+			
+			
+		} catch (Exception e) {
+			System.out.println("\n"+Arrays.toString(e.getStackTrace()));
+			// e.printStackTrace();
+			//System.exit(1);
+		}
+	}
 	
+	public void receiveMessageFromPeer(int index) {
+		try {
+			Socket p =myInputs.get(index);
+			byte[] messageLength = new byte[4];
+			byte[] messageType = new byte[1];
+			DataInputStream in = new DataInputStream(p.getInputStream());
+			//System.out.println("Before Reading Bitfield Message");
+			in.read(messageLength, 0, 4);
+			in.read(messageType, 0, 1);
+			
+			Message m = createMessage(messageType[0]);
+			m.receiveMessage(messageLength, in);
+		} catch (Exception e) {
+			System.out.println("\n"+Arrays.toString(e.getStackTrace()));
+			// e.printStackTrace();
+			//System.exit(1);
+		}
+	}
 	//Currently setting an empty bitfield message
-	public void sendBitfieldMessageToPeer(int index) {
+	 public void sendBitfieldMessageToPeer(int index) {
 		try {
 			//System.out.println("Trying to send bitfield message");
 			Socket p = myPeers.get(index);
@@ -295,7 +338,7 @@ public class Peer {
 		} catch (Exception e) {
 			System.out.println("****\n"+Arrays.toString(e.getStackTrace()));
 			// e.printStackTrace();
-			System.exit(1);
+			//System.exit(1);
 		}
 	}
 	
@@ -351,9 +394,9 @@ public class Peer {
 		} catch (Exception e) {
 			System.out.println("\n"+Arrays.toString(e.getStackTrace()));
 			// e.printStackTrace();
-			System.exit(1);
+			//System.exit(1);
 		}
-	}
+	} 
 	//public void sendToPeer(String message, int index) {
 	//	Socket p = myPeers.get(index);
 	//	DataOutputStream out = new DataOutputStream(p.getOutputStream());
@@ -371,6 +414,10 @@ public class Peer {
 		*/
 		ByteBuffer bb = ByteBuffer.wrap(bytes, 0, 4);
 		return bb.getInt();
+	}
+	
+	public byte [] intToByte (int length) {
+		return ByteBuffer.allocate(4).putInt(length).array();
 	}
 	public int myPeersSize() {
 		/* 
@@ -407,24 +454,24 @@ public class Peer {
 		return ss;
 	}
 	
-	public Message createMessage(byte [] message) {
+	public Message createMessage(byte message) {
 		int type = Message.getTypeOfMessage(message);
 		switch (type) {
-			case 0: return ChokeMessage.createMessage(message);
+			case 0: return ChokeMessage.createMessage();
 					
-			case 1: return UnchokeMessage.createMessage(message);
+			case 1: return UnchokeMessage.createMessage();
 					
-			case 2: return InterestedMessage.createMessage(message);
+			case 2: return InterestedMessage.createMessage();
 					
-			case 3: return NotInterestedMessage.createMessage(message);
+			case 3: return NotInterestedMessage.createMessage();
 					
-			case 4: return HaveMessage.createMessage(message);
+			case 4: return HaveMessage.createMessage();
 					
-			case 5: return BitfieldMessage.createMessage(message);
+			case 5: return BitfieldMessage.createMessage();
 					
-			case 6: return RequestMessage.createMessage(message);
-					
-			case 7: return PieceMessage.createMessage(message);
+			case 6: return RequestMessage.createMessage();
+
+			case 7: return PieceMessage.createMessage();
 					
 			default: return null;
 					
