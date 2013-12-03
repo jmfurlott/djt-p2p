@@ -7,10 +7,38 @@ import java.io.FileReader;
 import java.net.Socket;
 import java.net.ServerSocket;
 import java.util.*;
+import java.io.*;
 
 
 public class PeerProcess {
 	public static void main (String args[]) {
+		ArrayList<String> test = getPeerInfoConfig();
+		//check for first peer directory
+		
+		int position = -1;
+		for(int i = 0; i < test.size(); i++) {
+			String temp = test.get(i);
+			if(temp.charAt(temp.length() - 1) == '1') {
+				System.out.println("Had file at index: " + i);
+				position = i;
+			} else {
+				System.out.println("Did not have file at index: " + i);
+			}
+		
+		}
+
+		FileSplitter fs = new FileSplitter();
+		String whole = test.get(position);
+		String peerID = whole.split(" ")[0];
+		
+		try {
+			boolean test2 = fs.splitFile(new File("test.txt"), 1024*1024, peerID);
+			System.out.println("FILE SPLITTING: " + test2);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		
 		System.out.println("Running");
 		//System.out.println(Arrays.toString(args));
 		Peer peer = new Peer(args);
@@ -57,7 +85,7 @@ public class PeerProcess {
 	}
 	
 	//Read in the common configuration seperately for now
-	//TODO add to the other configuration, or establish a better naming convention
+
 	public void getCommonConfiguration() {
 		String st;
 
@@ -74,5 +102,32 @@ public class PeerProcess {
 			System.out.println(ex.toString());
 		}
 	}
+	
+	public static ArrayList<String> getPeerInfoConfig() {
+		ArrayList<String> config = new ArrayList<String>();
+	
+		String st;
+		String[] tokens = null;
+		try { 
+			BufferedReader in = new BufferedReader( new FileReader("PeerInfo.cfg"));
+			while((st = in.readLine()) != null) {
+				tokens = st.split("\\s+");
+				//System.out.println(st);
+				config.add(st);
+			}
+			
+			in.close();
+			return config;
+		}
+		catch (Exception ex) {
+			System.out.println(ex.toString());
+			return config;
+		}
+	
+
+	
+	
+	}
+	
 	
 }
