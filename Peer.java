@@ -408,6 +408,10 @@ public class Peer {
 	//	return in.readLine();
 	//}
 	
+	public String getPeerId() {
+		return peerId;
+	}
+	
 	public int lengthOfMessage(byte[] bytes) {
 		/* 
 			returns the length message sent by looking at the first 4 bytes
@@ -453,6 +457,8 @@ public class Peer {
 		ss.setSoTimeout(1000);
 		return ss;
 	}
+	
+	
 	
 	public Message createMessage(byte message) {
 		int type = Message.getTypeOfMessage(message);
