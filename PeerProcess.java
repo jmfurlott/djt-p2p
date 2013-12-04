@@ -115,6 +115,9 @@ public class PeerProcess {
 		
 		int numPieces = (FileSize + PieceSize -1) / PieceSize;
 		Message bitField = createBitfieldMessage(numPieces, peer);
+		long startTime = System.nanoTime();
+		long endTime = startTime;
+
 		try {
 			for (int i = 0; i < peer.myPeersSize(); i++) {
 				peer.sendMessageToPeer(i, bitField);
@@ -137,10 +140,21 @@ public class PeerProcess {
 					}
 					
 				}
-				peer.requestNextPiece();
+				if ((endTime - startTime) >= UnchokingInterval*1000000000) {
+					if ((endTime - startTime) >= OptimisticUnchokingInterval*1000000000) {
+						peer.optimisticUnchockingInterval(NumberOfPreferredNeighbors);
+					}
+					peer.unchokingInterval(NumberOfPreferredNeighbors);
+					startTime = System.nanoTime();
+				}
+				else {
+					peer.requestNextPiece();
+				}
+				
 				if (peer.done()) {
 					break;
 				}
+				endTime = System.nanoTime();
 			}
 			
 			thunderCatsAssemble();

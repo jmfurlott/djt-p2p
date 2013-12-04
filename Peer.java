@@ -29,12 +29,15 @@ public class Peer {
 	private int [] peerPorts;
 	
 	private ArrayList<Integer> numPiecesPerPeer;
-	private ArrayList<Boolean> peerChoked;
+	private ArrayList<Boolean> peersChoked;
 	private ArrayList<Boolean> peerInterested;
+	private ArrayList<Boolean> chokingMe;
 	
 	private int currentParts;
 	
 	private String fileName;
+	
+	private int optimisticNeighbor;
 
 	//private int myPort;
 	private String peerId;
@@ -76,7 +79,10 @@ public class Peer {
 			
 			numPiecesPerPeer = new ArrayList<Integer>();
 			peerInterested = new ArrayList<Boolean>();
-			peerChoked = new ArrayList<Boolean>();
+			peersChoked = new ArrayList<Boolean>();
+			chokingMe = new ArrayList<Boolean>();
+			
+			optimisticNeighbor = -1;
 			
 			int h = 0;
 			for (int i = 0; i < peerInfoStrings.size(); i++) {
@@ -166,7 +172,8 @@ public class Peer {
 					myPeersIds.add(peerPorts[i]+"");
 					numPiecesPerPeer.add(0);
 					peerInterested.add(false);
-					peerChoked.add(false);
+					peersChoked.add(false);
+					chokingMe.add(false);
 					//soc.connect(new InetSocketAddress("localhost", peerPorts[i]));\=
 					//System.out.println(" Worked!");
 					//System.out.println("Socket: " + myPeers.get(myPeers.size()-1).toString());
@@ -369,7 +376,12 @@ public class Peer {
 				
 			//}
 			
-			
+			if (messageType(m.getMessage(true)) == 4) {
+				if (currentParts >= numPiecesPerPeer.get(index)) {
+					sendMessageToPeer(index, new NotInterestedMessage());
+				}
+				
+			}
 			//TODO convert these into a logger event		
 			
 		} catch (Exception e) {
@@ -419,23 +431,22 @@ public class Peer {
 				
 				if (currentParts < numParts) {
 					sendMessageToPeer(index, new InterestedMessage());
-					peerInterested.set(index, true);
-					
-					//System.out.println("\nSending RequestMessage");
-					//Message request = RequestMessage.createMessage(intToByte(currentParts));
-					//sendMessageToPeer(index, request);
-					
 				}
 				else {
 					sendMessageToPeer(index, new NotInterestedMessage());
-					peerInterested.set(index, false);
 				}
 
 			}
 			
 			else if ((int)messageType[0] == 2) {
 				System.out.println("Received Interested Message");
+				peerInterested.set(index, true);
 				//receiveMessageFromPeer(index);
+			}
+			
+			else if ((int)messageType[0] == 3) {
+				System.out.println("Received Not Interested Message");
+				peerInterested.set(index, false);
 			}
 			
 			else if ((int)messageType[0] == 6) {
@@ -479,6 +490,17 @@ public class Peer {
 				int pieceNum = byteToInt(m.getMessage(true));
 				numPiecesPerPeer.set(index, pieceNum);
 				System.out.println("Updated NumPiecesPerPeer: " + numPiecesPerPeer);
+				if (currentParts < pieceNum) {
+					sendMessageToPeer(index, new InterestedMessage());
+				}
+			}
+			
+			else if ((int)messageType[0] == 0) {
+				chokingMe.set(index, true);
+			}
+			
+			else if ((int)messageType[0] == 1) {
+				chokingMe.set(index, false);
 			}
 			
 			return true;
@@ -593,6 +615,61 @@ public class Peer {
 	//	return in.readLine();
 	//}
 	
+	public void unchokingInterval(int numNeighbors) {
+		int numChoked = 0;
+		int numNeededToChoke = peerInterested.size()-numNeighbors;
+		for (int i = 0; i < peerInterested.size(); i++) {
+			if (!peerInterested.get(i) && i != optimisticNeighbor) {
+				peersChoked.set(i, true);
+				numChoked++;
+			}
+			else {
+				peersChoked.set(i, false);
+			}
+		}
+		while (numChoked++ < numNeededToChoke) {
+			int random = (int)(Math.random() * myInputsSize()); //TODO
+					
+			for (int i = 0; i < myInputsSize(); i++) {
+				if (random >= myInputsSize()) {
+					random = 0;
+				}
+				
+				if (!peersChoked.get(random)) {
+					peersChoked.set(random, true);
+					break;
+				}
+				random++;
+			}
+		}
+		for (int i = 0; i < peerInterested.size(); i++) {
+			Message message;
+			if (!peersChoked.get(i)) {
+				message = UnchokeMessage.createMessage();
+			}
+			else {
+				message = ChokeMessage.createMessage();
+			}
+			sendMessageToPeer(i, message);
+		}
+	}
+	
+	public void optimisticUnchockingInterval(int numNeighbors) {
+		int random = (int)(Math.random() * myInputsSize()); //TODO
+					
+		for (int i = 0; i < myInputsSize(); i++) {
+			if (random >= myInputsSize()) {
+				random = 0;
+			}
+			
+			if (!peerInterested.get(random)) {
+				optimisticNeighbor = random;
+				break;
+			}
+			random++;
+		}
+	}
+	
 	public String getPeerId() {
 		return peerId;
 	}
@@ -655,7 +732,7 @@ public class Peer {
 		Message request = RequestMessage.createMessage(intToByte(currentParts));
 		int index = -1;
 		for (int i = 0; i < numPiecesPerPeer.size(); i++) {
-			if (numPiecesPerPeer.get(i) > currentParts && !peerChoked.get(i)) {
+			if (numPiecesPerPeer.get(i) > currentParts && !chokingMe.get(i)) {
 				index = i;
 				break;
 			}	
