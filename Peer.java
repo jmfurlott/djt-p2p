@@ -41,6 +41,7 @@ public class Peer {
 
 	private ArrayList<Socket> myPeers;
 	private ArrayList<Socket> myInputs;
+	private ArrayList<String> myPeersIds;
 	private ServerSocket [] myServers;
 	private boolean [] connected;
 	private boolean [] connectedServers;
@@ -68,12 +69,13 @@ public class Peer {
 			}
 			
 			myPort = Integer.parseInt(peerId);
-			this.peerId = peerId+"00";
+			this.peerId = peerId+"";
 			
 			myServers = new ServerSocket[5];
 			
 			myPeers = new ArrayList<Socket>();
 			myInputs = new ArrayList<Socket>();
+			myPeersIds = new ArrayList<String>();
 
 			numConnectedSev = 1;
 			connected = new boolean [peerPorts.length];
@@ -109,6 +111,7 @@ public class Peer {
 				if (!connected[i]) {
 					//System.out.println("PeerPort: " + createToPort(peerPorts[i]));
 					myPeers.add(new Socket("localhost", createToPort(peerPorts[i])));
+					myPeersIds.add(peerPorts[i]+"");
 					//soc.connect(new InetSocketAddress("localhost", peerPorts[i]));\=
 					//System.out.println(" Worked!");
 					//System.out.println("Socket: " + myPeers.get(myPeers.size()-1).toString());
@@ -290,11 +293,32 @@ public class Peer {
 		}
 	}
 	
+	public void sendMessageToPeer(int index, Message m) {
+		try {
+			Socket p = myPeers.get(index);
+			byte [] mess = m.getMessage(true);
+			System.out.println("Before Sent");
+			DataOutputStream out = new DataOutputStream(p.getOutputStream());
+			//System.out.println("Before Reading Bitfield Message");
+			out.write(mess, 0, mess.length);
+			
+			String date = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS").format(new Date());			
+			//TODO convert these into a logger event		
+			System.out.println("[" + date + "]: Peer [" + myPeersIds.get(index) + "00] sent bitfield message to Peer [" + peerId + "]");
+			System.out.println("Message: " + Arrays.toString(m.getMessage(true)));
+		} catch (Exception e) {
+			System.out.println("\n"+Arrays.toString(e.getStackTrace()));
+			// e.printStackTrace();
+			//System.exit(1);
+		}
+	}
+	
 	public void receiveMessageFromPeer(int index) {
 		try {
 			Socket p =myInputs.get(index);
 			byte[] messageLength = new byte[4];
 			byte[] messageType = new byte[1];
+			System.out.println("Before receive");
 			DataInputStream in = new DataInputStream(p.getInputStream());
 			//System.out.println("Before Reading Bitfield Message");
 			in.read(messageLength, 0, 4);
@@ -302,6 +326,12 @@ public class Peer {
 			
 			Message m = createMessage(messageType[0]);
 			m.receiveMessage(messageLength, in);
+			
+			String date = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS").format(new Date());			
+				//TODO convert these into a logger event		
+				System.out.println("[" + date + "]: Peer [" + myPeersIds.get(index) + "00] received bitfield message to Peer [" + peerId + "]");
+			System.out.println("Message: " + Arrays.toString(m.getMessage(true)));
+			
 		} catch (Exception e) {
 			System.out.println("\n"+Arrays.toString(e.getStackTrace()));
 			// e.printStackTrace();
@@ -420,7 +450,7 @@ public class Peer {
 		return bb.getInt();
 	}
 	
-	public byte [] intToByte (int length) {
+	public static byte [] intToByte (int length) {
 		return ByteBuffer.allocate(4).putInt(length).array();
 	}
 	public int myPeersSize() {

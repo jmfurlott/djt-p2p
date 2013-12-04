@@ -56,25 +56,29 @@ public class PeerProcess {
 		
 		for(int i = 0; i < test.size(); i++) {
 			String temp = test.get(i);
-			
-			if(temp.charAt(temp.length() - 1) == '1') {
+			String id = temp.split(" ")[0];
+			System.out.println("Temp: " + temp.charAt(temp.length() - 1));
+			if(id.equals(myPeerId) && temp.charAt(temp.length() - 1) == '1') {
 				System.out.println("Had file at index: " + i);
 				position = i;
+				FileSplitter fs = new FileSplitter();
+				String whole = test.get(position);
+				//String peerID = whole.split(" ")[0];
+				
+				String peerID = myPeerId;
+				try {
+					boolean test2 = fs.splitFile(new File(FileName), PieceSize, peerID);
+					System.out.println("FILE SPLITTING: " + test2);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			} else {
 				System.out.println("Did not have file at index: " + i);
 			}
-			FileSplitter fs = new FileSplitter();
-			String whole = test.get(position);
-			String peerID = whole.split(" ")[0];
-		
-			try {
-				boolean test2 = fs.splitFile(new File("test.txt"), PieceSize, peerID);
-				System.out.println("FILE SPLITTING: " + test2);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			
 		
 		}
+		
 		
 		
 
@@ -82,9 +86,12 @@ public class PeerProcess {
 		
 		//Eventually merge this with above loops.. but for now, keep seperate for testing purposes
 		System.out.println("Simulate bitfield messages");
+		
+		int numPieces = (FileSize + PieceSize -1) / PieceSize;
+		Message bitField = createBitfieldMessage(numPieces);
 		try {
 			for (int i = 0; i < peer.myPeersSize(); i++) {
-				peer.sendMessageToPeer(i, (byte)5);
+				peer.sendMessageToPeer(i, bitField);
 			}
 			
 			for (int i = 0; i < peer.myInputsSize(); i++) {
@@ -98,8 +105,34 @@ public class PeerProcess {
 		}
 	}
 	
+	public static Message createBitfieldMessage(int numPieces) {
+		int numFiles = 0;
+		for (int i = 0; i < numPieces; i++) {
+			File check = new File(filePiece(i));
+			System.out.println("File: " + check.getAbsolutePath());
+			if (check.exists()) {
+				numFiles++;
+			}
+			else {
+				break;
+			}
+		}
+		return BitfieldMessage.createMessage(Peer.intToByte(numFiles));
+	}	
+	
+	public static String filePiece(int i) {
+		
+		String name = "null/" + myPeerId + "/" + FileName;
+		int pos = name.lastIndexOf(".");
+		if (pos > 0) {
+			name = name.substring(0, pos);
+		}
+		name += i;
+		
+		return name;
+	}
+	
 	//Read in the common configuration seperately for now
-
 	public static void getCommonConfiguration() {
 		ArrayList<String> strs = new ArrayList<String>();
 		String st;

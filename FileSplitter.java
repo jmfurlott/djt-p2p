@@ -13,6 +13,10 @@ public class FileSplitter {
 		FileOutputStream out;
 
 		String name = f.getName();
+		int pos = name.lastIndexOf(".");
+		if (pos > 0) {
+			name = name.substring(0, pos);
+		}
 		int partCounter = 1;
 		//int sizeOfFiles = 1024*1024; //1 mb
 		
@@ -24,7 +28,7 @@ public class FileSplitter {
 			String dirname = f.getParent() + "/" + peerID + "/";
 			File newDir = new File(dirname);
 			newDir.mkdirs();
-			String filename = f.getParent() +"/"+peerID + "/" + name + String.format("%03d", partCounter++);
+			String filename = f.getParent() +"/"+peerID + "/" + name + partCounter++;
 			File newFile = new File(filename);
 
 			System.out.println("FILE created: " + filename);

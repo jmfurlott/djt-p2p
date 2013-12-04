@@ -33,6 +33,11 @@ public abstract class Message {
 		return ByteBuffer.wrap(message, 4, length);
 	}
 	
+	public byte [] getMessage(boolean t) {
+		return message;
+		
+	}
+	
 	public byte getType() {
 		/*
 			returns the 5th byte which represents the type of message
