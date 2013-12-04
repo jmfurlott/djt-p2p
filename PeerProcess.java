@@ -121,9 +121,18 @@ public class PeerProcess {
 			}
 			
 			int temp = 0;
-			while (temp++ < 10) {
-				for (int i = 0; i < peer.myInputsSize(); i++) {
-					peer.receiveMessageFromPeer(i);
+			while (true) {//stillStuff
+				boolean receiving = true;
+				while (receiving) {
+					receiving = false;
+					for (int i = 0; i < peer.myInputsSize(); i++) {
+						receiving = receiving || peer.receiveMessageFromPeer(i);
+					}
+					
+				}
+				peer.requestNextPiece();
+				if (peer.done()) {
+					break;
 				}
 			}
 			
@@ -133,6 +142,7 @@ public class PeerProcess {
 			//System.exit(1);
 		}
 	}
+	
 	
 	public static Message createBitfieldMessage(int numPieces, Peer peer) {
 		int numFiles = 0;
@@ -221,10 +231,11 @@ public class PeerProcess {
 			System.out.println(ex.toString());
 			return config;
 		}
-	
 
+	}
 	
-	
+	public static int totalNumPieces() {
+		return ((FileSize + PieceSize -1) / PieceSize) -1;
 	}
 	
 	

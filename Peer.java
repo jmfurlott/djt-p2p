@@ -34,7 +34,7 @@ public class Peer {
 	//Maintain as HAVE messages are received
 	private ArrayList<Integer> numPiecesPerPeer;
 	//TODO not choking yet
-	private boolean [] peerChoked;
+	private ArrayList<Boolean> peerChoked;
 	//TODO not interesting
 	private ArrayList<Boolean> peerInterested;
 	
@@ -69,14 +69,15 @@ public class Peer {
 			myPeers = new ArrayList<Socket>();
 			myInputs = new ArrayList<Socket>();
 			myPeersIds = new ArrayList<String>();
+			
 
 			numConnectedSev = 1;
 			connected = new boolean[peerPorts.length];
 			connectedServers = new boolean[myServers.length];
 			
 			numPiecesPerPeer = new ArrayList<Integer>();
-			peerChoked = new boolean[peerPorts.length];
 			peerInterested = new ArrayList<Boolean>();
+			peerChoked = new ArrayList<Boolean>();
 			
 			int h = 0;
 			for (int i = 0; i < peerInfoStrings.size(); i++) {
@@ -166,6 +167,7 @@ public class Peer {
 					myPeersIds.add(peerPorts[i]+"");
 					numPiecesPerPeer.add(0);
 					peerInterested.add(false);
+					peerChoked.add(false);
 					//soc.connect(new InetSocketAddress("localhost", peerPorts[i]));\=
 					//System.out.println(" Worked!");
 					//System.out.println("Socket: " + myPeers.get(myPeers.size()-1).toString());
@@ -380,7 +382,7 @@ public class Peer {
 		}
 	}
 	
-	public void receiveMessageFromPeer(int index) {
+	public boolean receiveMessageFromPeer(int index) {
 		try {
 			Socket p =myInputs.get(index);
 			byte[] messageLength = new byte[4];
@@ -396,7 +398,7 @@ public class Peer {
 			Thread.sleep(100);
 			if (in.available() == 0) {
 				//System.out.println("No input found");
-				return;
+				return false;
 			}
 			in.read(messageLength, 0, 4);
 			in.read(messageType, 0, 1);
@@ -420,9 +422,9 @@ public class Peer {
 					sendMessageToPeer(index, new InterestedMessage());
 					peerInterested.set(index, true);
 					
-					System.out.println("\nSending RequestMessage");
-					Message request = RequestMessage.createMessage(intToByte(currentParts));
-					sendMessageToPeer(index, request);
+					//System.out.println("\nSending RequestMessage");
+					//Message request = RequestMessage.createMessage(intToByte(currentParts));
+					//sendMessageToPeer(index, request);
 					
 				}
 				else {
@@ -447,26 +449,30 @@ public class Peer {
 			
 			else if ((int)messageType[0] == 7) {
 				System.out.println("PIECE!!!!!");
-				File pFile = new File(fileName+currentParts);
-				String dirname = "null/" + peerId + "/";
-				File newDir = new File(dirname);
-				newDir.mkdirs();
-				
-				
-				pFile.createNewFile();
-				
-				FileOutputStream fileOut = new FileOutputStream(pFile);
-				fileOut.write(m.getMessage(true), 4, length-4);
-				fileOut.close();
-				
-				currentParts++;
-				
-				//now that we have the file piece, send out have message
-				for(int i = 0; i < myPeers.size(); i++) {
-					//System.out.println("Sent Have Message for part: " + currentParts-1 + " 
-					Message haveMessage = HaveMessage.createMessage(currentParts);
+				int piece = byteToInt(m.getMessage(true));
+				if (piece == currentParts) {
 					
-					sendMessageToPeer(i, haveMessage);
+					File pFile = new File(fileName+currentParts);
+					String dirname = "null/" + peerId + "/";
+					File newDir = new File(dirname);
+					newDir.mkdirs();
+				
+				
+					pFile.createNewFile();
+				
+					FileOutputStream fileOut = new FileOutputStream(pFile);
+					fileOut.write(m.getMessage(true), 4, length-4);
+					fileOut.close();
+				
+					currentParts++;
+				
+					//now that we have the file piece, send out have message
+					for(int i = 0; i < myPeers.size(); i++) {
+						//System.out.println("Sent Have Message for part: " + currentParts-1 + " 
+						Message haveMessage = HaveMessage.createMessage(currentParts);
+					
+						sendMessageToPeer(i, haveMessage);
+					}
 				}
 			}
 			
@@ -476,12 +482,15 @@ public class Peer {
 				System.out.println("Updated NumPiecesPerPeer: " + numPiecesPerPeer);
 			}
 			
+			return true;
+			
 			
 		} catch (Exception e) {
 			System.out.println("Error: " + e.toString());
 			System.out.println("\n"+Arrays.toString(e.getStackTrace()));
 			// e.printStackTrace();
 			//System.exit(1);
+			return false;
 		}
 	}
 	//Currently setting an empty bitfield message
@@ -636,6 +645,39 @@ public class Peer {
 		return peerInterested.get(i);
 	}
 	
+	public int getCurrentParts() {
+		return currentParts;
+	}
+	
+	public void requestNextPiece() {
+		if (currentParts >= PeerProcess.totalNumPieces()) {
+			return;
+		}
+		Message request = RequestMessage.createMessage(intToByte(currentParts));
+		int index = -1;
+		for (int i = 0; i < numPiecesPerPeer.size(); i++) {
+			if (numPiecesPerPeer.get(i) > currentParts && !peerChoked.get(i)) {
+				index = i;
+				break;
+			}	
+		}
+		if (index != -1) {
+			sendMessageToPeer(index, request);
+		}
+	}
+	
+	public boolean done() {
+		System.out.println("!!!!TotalNumPieces: " + PeerProcess.totalNumPieces());
+		if (currentParts < PeerProcess.totalNumPieces()) {
+			return false;
+		}
+		for (int i = 0; i < numPiecesPerPeer.size(); i++) {
+			if (numPiecesPerPeer.get(i) < PeerProcess.totalNumPieces()) {
+				return false;
+			}
+		}
+		return true;
+	}
 	/* public int createToPort(int port) {
 		
 			creates a unique port so the Socket can be identified easily
