@@ -36,18 +36,57 @@ public class Peer {
 	//TODONE
 	private int [] peerPorts; // = { 11, 12, 13, 14, 15, 16};
 
-	private int myPort;
+	//private int myPort;
 	private String peerId;
 
 	private ArrayList<Socket> myPeers;
 	private ArrayList<Socket> myInputs;
 	private ArrayList<String> myPeersIds;
+	private ArrayList<String> peerInfoStrings;
 	private ServerSocket [] myServers;
 	private boolean [] connected;
 	private boolean [] connectedServers;
 	
 	private int numConnectedSev;
 	private HashMap<String, Integer> mapPeers = new HashMap<String, Integer>();
+
+	public Peer (String myPeerId, String host, ArrayList<String> pIS) {
+		try {
+			peerInfoStrings = pIS;
+			peerId = myPeerId;
+			peerPorts = new int [peerInfoStrings.size()];
+			
+			
+			myServers = new ServerSocket[peerInfoStrings.size()-1];
+			myPeers = new ArrayList<Socket>();
+			myInputs = new ArrayList<Socket>();
+			myPeersIds = new ArrayList<String>();
+
+			numConnectedSev = 1;
+			connected = new boolean [peerPorts.length];
+			connectedServers = new boolean[myServers.length];
+			
+			int h = 0;
+			for (int i = 0; i < peerInfoStrings.size(); i++) {
+				String id = peerInfoStrings.get(i).split(" ")[0];
+				if (!id.equals(peerId)) {
+					peerPorts[h] = Integer.parseInt(id);
+					myServers[h] = createServer(host,Integer.parseInt(peerInfoStrings.get(i).split(" ")[0]));
+					System.out.println("Server " + h + ": " + myServers[h]);
+					h++;
+				}
+				else {
+					connected[i] = true;
+				}
+			}
+		} 
+		catch (Exception e) {
+			System.out.println(e.toString());
+			e.printStackTrace();
+			//System.exit(1);
+		}
+	}
+	/*
 	public Peer (String[] args) {
 		//System.out.println("Test");
 		try {
@@ -98,7 +137,7 @@ public class Peer {
 			//System.exit(1);
 		}
 	}
-	
+	*/
 	public void connect() {
 		/*
 			Connects all the Peer's myPeers sockets to the other 
@@ -109,8 +148,8 @@ public class Peer {
 			for (int i = 0; i < peerPorts.length; i++) { // && !soc.isConnected(); i++) {
 				//System.out.println("PortMe: " + port + " To Port: " + peerPorts[i] );
 				if (!connected[i]) {
-					//System.out.println("PeerPort: " + createToPort(peerPorts[i]));
-					myPeers.add(new Socket("localhost", createToPort(peerPorts[i])));
+					System.out.println("Host: " +peerInfoStrings.get(i).split(" ")[1] + " PeerPort: " + Integer.parseInt(peerId));
+					myPeers.add(new Socket(peerInfoStrings.get(i).split(" ")[1], Integer.parseInt(peerId)));
 					myPeersIds.add(peerPorts[i]+"");
 					//soc.connect(new InetSocketAddress("localhost", peerPorts[i]));\=
 					//System.out.println(" Worked!");
@@ -128,7 +167,7 @@ public class Peer {
 			}
 		}
 		catch (Exception e) {
-			System.out.println("Exception on port: " + myPort);
+			System.out.println("Exception on Peer: " + peerId);
 			//if (myPeers.get(myPeers.size()-1) != null) {
 			//	System.out.println("End of myPeers: " + myPeers.get(myPeers.size()-1));
 			//}
@@ -466,24 +505,24 @@ public class Peer {
 		return myInputs.size();
 	}
 	
-	public int createToPort(int port) {
-		/* 
+	/* public int createToPort(int port) {
+		
 			creates a unique port so the Socket can be identified easily
-		*/
+		
 		return Integer.parseInt(port+ "" + myPort);
-	}
-	public int createAddressPort(int port) {
-		/* 
+	} */
+	/*public int createAddressPort(int port) {
+		
 			creates a unique port so the ServerSocket can be identified easily
-		*/
+	
 		return Integer.parseInt(myPort+ "" + port);
-	}
+	} */
 	public ServerSocket createServer(String host, int port) throws Exception{
 		/* 
 			creates a ServerSocket with a timeout of 1 second
 		*/
 		ServerSocket ss = new ServerSocket();
-		ss.bind(new InetSocketAddress("localhost", createAddressPort(port)));
+		ss.bind(new InetSocketAddress(host, port));
 		ss.setSoTimeout(1000);
 		return ss;
 	}

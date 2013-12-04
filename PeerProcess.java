@@ -8,6 +8,7 @@ import java.net.Socket;
 import java.net.ServerSocket;
 import java.util.*;
 import java.io.*;
+import java.net.*;
 
 
 public class PeerProcess {
@@ -19,12 +20,36 @@ public class PeerProcess {
 	private static String FileName;
 	private static int FileSize;
 	private static int PieceSize;
+	
 	public static void main (String args[]) {
 		getCommonConfiguration();
 		System.out.println("Running");
+
+//------------
+		String foundHost = "";
+		ArrayList<String> peerInfoStrings = getPeerInfoConfig();
+		for(int k = 0; k < peerInfoStrings.size(); k++) {
+			
+			try {
+				foundHost = InetAddress.getLocalHost().getHostName();
+			} catch(Exception e){ 
+				e.printStackTrace();
+			}
+			System.out.println(peerInfoStrings.get(k).split(" ")[1]);
+			if(foundHost.equals(peerInfoStrings.get(k).split(" ")[1])) {
+				myPeerId = peerInfoStrings.get(k).split(" ")[0];
+			}
+		
+		}
+
+		System.out.println("Joe peerid: " + myPeerId);
+	
+
+
+		
 		//System.out.println(Arrays.toString(args));
-		Peer peer = new Peer(args);
-		myPeerId = peer.getPeerId();
+		Peer peer = new Peer(myPeerId, foundHost, peerInfoStrings);
+		//myPeerId = //peer.getPeerId();
 		while (!peer.serverFullyConnected() || !peer.socketsFullyConnected()) {
 		System.out.println("Looping until fully connected");
 			if (!peer.socketsFullyConnected())
@@ -168,7 +193,7 @@ public class PeerProcess {
 		String st;
 		String[] tokens = null;
 		try { 
-			BufferedReader in = new BufferedReader( new FileReader("PeerInfo.cfg"));
+			BufferedReader in = new BufferedReader( new FileReader("PeerInfoJoe.cfg"));
 			while((st = in.readLine()) != null) {
 				tokens = st.split("\\s+");
 				//System.out.println(st);
