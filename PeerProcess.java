@@ -125,8 +125,15 @@ public class PeerProcess {
 				boolean receiving = true;
 				while (receiving) {
 					receiving = false;
+					
+					int random = (int)(Math.random() * peer.myInputsSize()); //TODO
+					
 					for (int i = 0; i < peer.myInputsSize(); i++) {
-						receiving = receiving || peer.receiveMessageFromPeer(i);
+						if (random >= peer.myInputsSize()) {
+							random = 0;
+						}
+						receiving = receiving || peer.receiveMessageFromPeer(random);
+						random++;
 					}
 					
 				}
@@ -136,6 +143,8 @@ public class PeerProcess {
 				}
 			}
 			
+			thunderCatsAssemble();
+			
 		} catch (Exception e){
 			System.out.println("\n"+Arrays.toString(e.getStackTrace()));
 			// e.printStackTrace();
@@ -143,6 +152,29 @@ public class PeerProcess {
 		}
 	}
 	
+	public static void thunderCatsAssemble() {
+		try {
+			String name = "null/" + myPeerId + "/" + FileName;
+			File completeFile = new File(name);
+			completeFile.createNewFile();
+			FileOutputStream out = new FileOutputStream(completeFile);
+			for (int i = 0; i < totalNumPieces(); i++) {
+				File piece = new File(filePiece(i));
+				System.out.println("Reading from File: " + filePiece(i));
+				FileInputStream in = new FileInputStream(piece);
+				while (in.available() > 0) {
+					out.write(in.read());
+				}
+				in.close();
+				System.out.println("Deleting File: " + filePiece(i));
+				piece.delete();
+			}
+		} catch (Exception e) {
+			System.out.println("Gotta catch'm all");
+			System.out.println("Error: " + e.toString());
+			System.out.println("\n"+Arrays.toString(e.getStackTrace()));
+		}
+	}
 	
 	public static Message createBitfieldMessage(int numPieces, Peer peer) {
 		int numFiles = 0;

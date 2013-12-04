@@ -360,7 +360,7 @@ public class Peer {
 			
 			String date = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS").format(new Date());			
 			System.out.println("[" + date + "]: Peer [" + peerId+ "] sent message of type " + messageType(mess) + " to Peer [" +  myPeersIds.get(index) + "]");
-			System.out.println("Message: " + Arrays.toString(m.getMessage(true)));
+			//System.out.println("Message: " + Arrays.toString(m.getMessage(true)));
 			System.out.println("End Send Message\n");
 
 			//if (messageType(m.getMessage(true)) == 5) {
@@ -410,7 +410,7 @@ public class Peer {
 			String date = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS").format(new Date());			
 				//TODO convert these into a logger event		
 				System.out.println("[" + date + "]: Peer [" + myPeersIds.get(index) + "] received message of type " + (int)messageType[0]+ " to Peer [" + peerId + "]");
-			System.out.println("Message: " + Arrays.toString(m.getMessage(true)));
+			//System.out.println("Message: " + Arrays.toString(m.getMessage(true)));
 			System.out.println("NumPiecesPerPeer: " + numPiecesPerPeer.toString()+"\n");
 			
 			if ((int)messageType[0] == 5) {
