@@ -1,8 +1,14 @@
 import java.io.DataInputStream;
+import java.util.Arrays;
 
 public class InterestedMessage extends Message{
 	public InterestedMessage () {
-	
+		message = new byte[5];
+		message[0] = (byte)0;
+		message[1] = (byte)0;
+		message[2] = (byte)0;
+		message[3] = (byte)0;
+		message[4] = (byte)2;
 	}
 	public static Message createMessage(byte [] message) {
 		InterestedMessage me = new InterestedMessage();
@@ -20,7 +26,7 @@ public class InterestedMessage extends Message{
 			byte[] mess = new byte[length];
 			in.read(mess, 0, length);
 			
-			System.out.println("Message Length: " + length +", Received: " + new String(mess));
+			System.out.println("Interested Message Length: " + length +", Received: " + Arrays.toString(mess));
 		} catch (Exception e) {
 			//something
 		}
@@ -28,7 +34,8 @@ public class InterestedMessage extends Message{
 	
 	public byte [] sendMessage() {
 		//do something
-		return "BitFieldMessage".getBytes();
+		
+		return message;
 		//return messageBody;
 	
 	}

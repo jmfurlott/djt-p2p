@@ -74,20 +74,21 @@ public class PeerProcess {
 			System.exit(1);
 		}
 		
-		ArrayList<String> test = getPeerInfoConfig();
+		//ArrayList<String> test = getPeerInfoConfig();
 		//check for first peer directory
 		
 		int position = -1;
 		
-		for(int i = 0; i < test.size(); i++) {
-			String temp = test.get(i);
+		for(int i = 0; i < peerInfoStrings.size(); i++) {
+			String temp = peerInfoStrings.get(i);
 			String id = temp.split(" ")[0];
 			System.out.println("Temp: " + temp.charAt(temp.length() - 1));
+			System.out.println("ID: " + id + " MyPeerId: " + myPeerId);
 			if(id.equals(myPeerId) && temp.charAt(temp.length() - 1) == '1') {
 				System.out.println("Had file at index: " + i);
 				position = i;
 				FileSplitter fs = new FileSplitter();
-				String whole = test.get(position);
+				String whole = peerInfoStrings.get(position);
 				//String peerID = whole.split(" ")[0];
 				
 				String peerID = myPeerId;
@@ -113,7 +114,7 @@ public class PeerProcess {
 		System.out.println("Simulate bitfield messages");
 		
 		int numPieces = (FileSize + PieceSize -1) / PieceSize;
-		Message bitField = createBitfieldMessage(numPieces);
+		Message bitField = createBitfieldMessage(numPieces, peer);
 		try {
 			for (int i = 0; i < peer.myPeersSize(); i++) {
 				peer.sendMessageToPeer(i, bitField);
@@ -122,15 +123,14 @@ public class PeerProcess {
 			for (int i = 0; i < peer.myInputsSize(); i++) {
 				peer.receiveMessageFromPeer(i);
 			}
-		}
-		catch (Exception e){
+		} catch (Exception e){
 			System.out.println("\n"+Arrays.toString(e.getStackTrace()));
 			// e.printStackTrace();
 			System.exit(1);
 		}
 	}
 	
-	public static Message createBitfieldMessage(int numPieces) {
+	public static Message createBitfieldMessage(int numPieces, Peer peer) {
 		int numFiles = 0;
 		for (int i = 0; i < numPieces; i++) {
 			File check = new File(filePiece(i));
@@ -142,6 +142,7 @@ public class PeerProcess {
 				break;
 			}
 		}
+		peer.setCurrentParts(numFiles);
 		return BitfieldMessage.createMessage(Peer.intToByte(numFiles));
 	}	
 	

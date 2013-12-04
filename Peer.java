@@ -19,11 +19,6 @@ import java.util.Date;
 /*
 Peer Class
 -Instances of this class will be running on all of the different user machines
--Currently, all of the instances are running on different local ports
--TODO next step is to either
-	-Continue development with localhost operations
-	-Move to developing with truly remote peers
--Leaning towards the latter
 */
 
 public class Peer {
@@ -31,10 +26,17 @@ public class Peer {
 	//Logger set up
 	private PrintWriter logger;
 	
-	//TODO, need to have these data driven from config
-	//TODO, simply need to add args to the peer constructor
-	//TODONE
-	private int [] peerPorts; // = { 11, 12, 13, 14, 15, 16};
+	private int [] peerPorts;
+	
+	//TODO populate initially based on bitfield message
+	//Maintain as HAVE messages are received
+	private ArrayList<Integer> numPiecesPerPeer;
+	//TODO not choking yet
+	private boolean [] peerChoked;
+	//TODO not interesting
+	private ArrayList<Boolean> peerInterested;
+	
+	private int currentParts;
 
 	//private int myPort;
 	private String peerId;
@@ -56,21 +58,26 @@ public class Peer {
 			peerId = myPeerId;
 			peerPorts = new int [peerInfoStrings.size()];
 			
-			
+			currentParts = 0;
 			myServers = new ServerSocket[peerInfoStrings.size()-1];
 			myPeers = new ArrayList<Socket>();
 			myInputs = new ArrayList<Socket>();
 			myPeersIds = new ArrayList<String>();
 
 			numConnectedSev = 1;
-			connected = new boolean [peerPorts.length];
+			connected = new boolean[peerPorts.length];
 			connectedServers = new boolean[myServers.length];
+			
+			numPiecesPerPeer = new ArrayList<Integer>();
+			peerChoked = new boolean[peerPorts.length];
+			peerInterested = new ArrayList<Boolean>();
 			
 			int h = 0;
 			for (int i = 0; i < peerInfoStrings.size(); i++) {
 				String id = peerInfoStrings.get(i).split(" ")[0];
+				peerPorts[i] = Integer.parseInt(id);
 				if (!id.equals(peerId)) {
-					peerPorts[h] = Integer.parseInt(id);
+					
 					myServers[h] = createServer(host,Integer.parseInt(peerInfoStrings.get(i).split(" ")[0]));
 					System.out.println("Server " + h + ": " + myServers[h]);
 					h++;
@@ -151,6 +158,8 @@ public class Peer {
 					System.out.println("Host: " +peerInfoStrings.get(i).split(" ")[1] + " PeerPort: " + Integer.parseInt(peerId));
 					myPeers.add(new Socket(peerInfoStrings.get(i).split(" ")[1], Integer.parseInt(peerId)));
 					myPeersIds.add(peerPorts[i]+"");
+					numPiecesPerPeer.add(0);
+					peerInterested.add(false);
 					//soc.connect(new InetSocketAddress("localhost", peerPorts[i]));\=
 					//System.out.println(" Worked!");
 					//System.out.println("Socket: " + myPeers.get(myPeers.size()-1).toString());
@@ -158,7 +167,7 @@ public class Peer {
 					
 					//TODO need to convert this to a logger event
 					String date = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS").format(new Date());
-					System.out.println("[" + date + "]: Peer [" + peerId + "] makes a connection to Peer [" + peerPorts[i] + "00]");
+					System.out.println("[" + date + "]: Peer [" + peerId + "] makes a connection to Peer [" + peerPorts[i] + "]");
 				}
 
 				else {
@@ -200,7 +209,7 @@ public class Peer {
 						
 						//TODO convert these into a logger event
 						
-						System.out.println("[" + date + "]: Peer [" + peerPorts[i] + "00] is connected from Peer [" + peerId + "]");
+						System.out.println("[" + date + "]: Peer [" + peerPorts[i] + "] is connected from Peer [" + peerId + "]");
 						//if (!myPeers.contains(p)) {
 							//myPeersCli.add(p);
 						numConnectedSev++;
@@ -258,7 +267,7 @@ public class Peer {
 			//System.out.println("Sent " + new String(message) + " with pId " +peerId + " to " + myPeers.get(index));
 			String date = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS").format(new Date());			
 			//TODO convert these into a logger event		
-			System.out.println("[" + date + "]: Peer [" + peerPorts[index] + "00] sent handshake message to Peer [" + peerId + "]");
+			System.out.println("[" + date + "]: Peer [" + peerPorts[index] + "] sent handshake message to Peer [" + peerId + "]");
 			
 		} catch (Exception e) {
 			System.out.println("\n"+Arrays.toString(e.getStackTrace()));
@@ -291,7 +300,7 @@ public class Peer {
 				//System.out.println("HandShake message received from " + pId + " by " + peerId);
 				String date = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS").format(new Date());			
 				//TODO convert these into a logger event		
-				System.out.println("[" + date + "]: Peer [" + peerPorts[index] + "00] received handshake message from Peer [" + peerId + "]");
+				System.out.println("[" + date + "]: Peer [" + peerPorts[index] + "] received handshake message from Peer [" + peerId + "]");
 			}
 			else {
 				System.out.println("This is not a handshake..., attempting to read rest of message");
@@ -336,15 +345,26 @@ public class Peer {
 		try {
 			Socket p = myPeers.get(index);
 			byte [] mess = m.getMessage(true);
-			System.out.println("Before Sent");
+			System.out.println("Sending Message");
 			DataOutputStream out = new DataOutputStream(p.getOutputStream());
 			//System.out.println("Before Reading Bitfield Message");
-			out.write(mess, 0, mess.length);
+			out.write(mess, out.size(), mess.length);
 			
 			String date = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS").format(new Date());			
-			//TODO convert these into a logger event		
-			System.out.println("[" + date + "]: Peer [" + myPeersIds.get(index) + "00] sent bitfield message to Peer [" + peerId + "]");
+			System.out.println("[" + date + "]: Peer [" + myPeersIds.get(index) + "] sent bitfield message to Peer [" + peerId + "]");
 			System.out.println("Message: " + Arrays.toString(m.getMessage(true)));
+			System.out.println("End Send Message\n");
+
+			if (messageType(m.getMessage(true)) == 5) {
+				//receive InterestedMessage
+				System.out.println("Waiting for InterestedMessage");
+				receiveMessageFromPeer(index);
+				
+			}
+			
+			
+			//TODO convert these into a logger event		
+			
 		} catch (Exception e) {
 			System.out.println("\n"+Arrays.toString(e.getStackTrace()));
 			// e.printStackTrace();
@@ -365,11 +385,40 @@ public class Peer {
 			
 			Message m = createMessage(messageType[0]);
 			m.receiveMessage(messageLength, in);
+			int length = lengthOfMessage(messageLength);
 			
 			String date = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS").format(new Date());			
 				//TODO convert these into a logger event		
-				System.out.println("[" + date + "]: Peer [" + myPeersIds.get(index) + "00] received bitfield message to Peer [" + peerId + "]");
+				System.out.println("[" + date + "]: Peer [" + myPeersIds.get(index) + "] received message to Peer [" + peerId + "]");
 			System.out.println("Message: " + Arrays.toString(m.getMessage(true)));
+			System.out.println("NumPiecesPerPeer: " + numPiecesPerPeer.toString()+"\n");
+			
+			if ((int)messageType[0] == 5) {
+				ByteBuffer bb = ByteBuffer.wrap(m.getMessage(true), 0, length);
+				int numParts = bb.getInt();
+				numPiecesPerPeer.set(index, numParts);
+				
+				if (currentParts < numParts) {
+					sendMessageToPeer(index, new InterestedMessage());
+					peerInterested.set(index, true);
+					
+					System.out.println("\nSending RequestMessage");
+					Message request = RequestMessage.createMessage(intToByte(currentParts));
+					sendMessageToPeer(index, request);
+					
+				}
+				else {
+					sendMessageToPeer(index, new NotInterestedMessage());
+					peerInterested.set(index, false);
+				}
+
+			}
+			
+			else if ((int)messageType[0] == 2) {
+				System.out.println("Received Interested Message");
+				receiveMessageFromPeer(index);
+			}
+			
 			
 		} catch (Exception e) {
 			System.out.println("\n"+Arrays.toString(e.getStackTrace()));
@@ -401,7 +450,7 @@ public class Peer {
 			out.write(peerId.getBytes(), 0, 4);
 			String date = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS").format(new Date());			
 			//TODO convert these into a logger event		
-			System.out.println("[" + date + "]: Peer [" + peerPorts[index] + "00] sent bitfield message to Peer [" + peerId + "]");
+			System.out.println("[" + date + "]: Peer [" + peerPorts[index] + "] sent bitfield message to Peer [" + peerId + "]");
 		
 			//System.out.println("Sent " + new String(message) + " with pId " +peerId + " to " + myPeers.get(index));
 		} catch (Exception e) {
@@ -449,7 +498,7 @@ public class Peer {
 				}
 				String date = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS").format(new Date());			
 				//TODO convert these into a logger event		
-				System.out.println("[" + date + "]: Peer [" + peerPorts[index] + "00] received bitfield message to Peer [" + peerId + "]");
+				System.out.println("[" + date + "]: Peer [" + peerPorts[index] + "] received bitfield message to Peer [" + peerId + "]");
 				
 				//System.out.println("Message payload size = " + messagePayloadSize);
 				//System.out.println(" " + helper[0] + " " + helper[1] + " " + helper[2] + " " + helper[3]);	
@@ -481,6 +530,10 @@ public class Peer {
 		return peerId;
 	}
 	
+	public int messageType(byte[] bytes) {
+		return (int)bytes[4];
+	}
+	
 	public int lengthOfMessage(byte[] bytes) {
 		/* 
 			returns the length message sent by looking at the first 4 bytes
@@ -503,6 +556,14 @@ public class Peer {
 			returns how many Sockets this Peer will be receiving input from
 		*/
 		return myInputs.size();
+	}
+	
+	public void setCurrentParts(int a) {
+		currentParts = a;
+	}
+	
+	public boolean getPeerInterested(int i) {
+		return peerInterested.get(i);
 	}
 	
 	/* public int createToPort(int port) {

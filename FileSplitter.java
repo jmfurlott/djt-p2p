@@ -17,7 +17,7 @@ public class FileSplitter {
 		if (pos > 0) {
 			name = name.substring(0, pos);
 		}
-		int partCounter = 1;
+		int partCounter = 0;
 		//int sizeOfFiles = 1024*1024; //1 mb
 		
 		byte[] buffer = new byte[sizeOfFiles];

@@ -1,5 +1,6 @@
 import java.io.DataInputStream;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 public class BitfieldMessage extends Message{
 	public BitfieldMessage () {
@@ -32,7 +33,7 @@ public class BitfieldMessage extends Message{
 			byte[] mess = new byte[length];
 			in.read(mess, 0, length);
 			this.message = mess;
-			System.out.println("Message Length: " + length +", Received: " + new String(mess));
+			System.out.println("Bitfield Message Length: " + length +", Received: " + Arrays.toString(mess));
 		} catch (Exception e) {
 			//something
 		}

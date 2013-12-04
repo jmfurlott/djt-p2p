@@ -1,8 +1,9 @@
 import java.nio.ByteBuffer;
 import java.io.DataInputStream;
+import java.util.Arrays;
 
 public abstract class Message {
-	protected byte [] message;
+	public byte [] message;
 	
 	public int getMessageLength() {
 		/* 
