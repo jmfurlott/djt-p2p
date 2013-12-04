@@ -48,7 +48,7 @@ public class PeerProcess {
 
 		
 		//System.out.println(Arrays.toString(args));
-		Peer peer = new Peer(myPeerId, foundHost, peerInfoStrings);
+		Peer peer = new Peer(myPeerId, foundHost, fileConvention(), peerInfoStrings);
 		//myPeerId = //peer.getPeerId();
 		while (!peer.serverFullyConnected() || !peer.socketsFullyConnected()) {
 		System.out.println("Looping until fully connected");
@@ -120,17 +120,17 @@ public class PeerProcess {
 				peer.sendMessageToPeer(i, bitField);
 			}
 			
-			for (int i = 0; i < peer.myInputsSize(); i++) {
-				peer.receiveMessageFromPeer(i);
+			int temp = 0;
+			while (temp++ < 10) {
+				for (int i = 0; i < peer.myInputsSize(); i++) {
+					peer.receiveMessageFromPeer(i);
+				}
 			}
 			
-			for (int i = 0; i < peer.myInputsSize(); i++) {
-				peer.receiveMessageFromPeer(i);
-			}
 		} catch (Exception e){
 			System.out.println("\n"+Arrays.toString(e.getStackTrace()));
 			// e.printStackTrace();
-			System.exit(1);
+			//System.exit(1);
 		}
 	}
 	
@@ -159,6 +159,15 @@ public class PeerProcess {
 		}
 		name += i;
 		
+		return name;
+	}
+	
+	public static String fileConvention() {
+		String name = "null/" + myPeerId + "/" + FileName;
+		int pos = name.lastIndexOf(".");
+		if (pos > 0) {
+			name = name.substring(0, pos);
+		}
 		return name;
 	}
 	

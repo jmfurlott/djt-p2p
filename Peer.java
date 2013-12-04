@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Scanner;
+import java.io.FileOutputStream;
 /*
 Peer Class
 -Instances of this class will be running on all of the different user machines
@@ -38,6 +39,8 @@ public class Peer {
 	private ArrayList<Boolean> peerInterested;
 	
 	private int currentParts;
+	
+	private String fileName;
 
 	//private int myPort;
 	private String peerId;
@@ -53,11 +56,13 @@ public class Peer {
 	private int numConnectedSev;
 	private HashMap<String, Integer> mapPeers = new HashMap<String, Integer>();
 
-	public Peer (String myPeerId, String host, ArrayList<String> pIS) {
+	public Peer (String myPeerId, String host, String fileName, ArrayList<String> pIS) {
 		try {
 			peerInfoStrings = pIS;
 			peerId = myPeerId;
 			peerPorts = new int [peerInfoStrings.size()];
+			
+			this.fileName = fileName;
 			
 			currentParts = 0;
 			myServers = new ServerSocket[peerInfoStrings.size()-1];
@@ -352,22 +357,24 @@ public class Peer {
 			out.write(mess, out.size(), mess.length);
 			
 			String date = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS").format(new Date());			
-			System.out.println("[" + date + "]: Peer [" + myPeersIds.get(index) + "] sent bitfield message to Peer [" + peerId + "]");
+			System.out.println("[" + date + "]: Peer [" + peerId+ "] sent message of type " + messageType(mess) + " to Peer [" +  myPeersIds.get(index) + "]");
 			System.out.println("Message: " + Arrays.toString(m.getMessage(true)));
 			System.out.println("End Send Message\n");
 
-			if (messageType(m.getMessage(true)) == 5) {
+			//if (messageType(m.getMessage(true)) == 5) {
 				//receive InterestedMessage
-				System.out.println("Waiting for InterestedMessage");
-				receiveMessageFromPeer(index);
+				//System.out.println("Waiting for InterestedMessage");
+				//receiveMessageFromPeer(index);
 				
-			}
+			//}
 			
 			
 			//TODO convert these into a logger event		
 			
 		} catch (Exception e) {
+			System.out.println("Error: " + e.toString());
 			System.out.println("\n"+Arrays.toString(e.getStackTrace()));
+			
 			// e.printStackTrace();
 			//System.exit(1);
 		}
@@ -378,7 +385,7 @@ public class Peer {
 			Socket p =myInputs.get(index);
 			byte[] messageLength = new byte[4];
 			byte[] messageType = new byte[1];
-			System.out.println("Before receive");
+			//System.out.println("Before receive");
 			DataInputStream in = new DataInputStream(p.getInputStream());
 			//System.out.println("Before Reading Bitfield Message");
 			//Scanner hasNextCheck = new Scanner(in);
@@ -386,8 +393,9 @@ public class Peer {
 				//System.out.println("No input found");
 				//return;
 			//}
+			Thread.sleep(100);
 			if (in.available() == 0) {
-				System.out.println("No input found");
+				//System.out.println("No input found");
 				return;
 			}
 			in.read(messageLength, 0, 4);
@@ -399,7 +407,7 @@ public class Peer {
 			
 			String date = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS").format(new Date());			
 				//TODO convert these into a logger event		
-				System.out.println("[" + date + "]: Peer [" + myPeersIds.get(index) + "] received message to Peer [" + peerId + "]");
+				System.out.println("[" + date + "]: Peer [" + myPeersIds.get(index) + "] received message of type " + (int)messageType[0]+ " to Peer [" + peerId + "]");
 			System.out.println("Message: " + Arrays.toString(m.getMessage(true)));
 			System.out.println("NumPiecesPerPeer: " + numPiecesPerPeer.toString()+"\n");
 			
@@ -426,18 +434,58 @@ public class Peer {
 			
 			else if ((int)messageType[0] == 2) {
 				System.out.println("Received Interested Message");
-				receiveMessageFromPeer(index);
+				//receiveMessageFromPeer(index);
+			}
+			
+			else if ((int)messageType[0] == 6) {
+				byte [] request = m.getMessage(true);
+				int pieceNum = byteToInt(request);
+				File piece = getFile(pieceNum);
+				Message pieceMessage = PieceMessage.createMessage(piece, pieceNum);
+				sendMessageToPeer(index, pieceMessage);
+			}
+			
+			else if ((int)messageType[0] == 7) {
+				System.out.println("PIECE!!!!!");
+				File pFile = new File(fileName+currentParts);
+				String dirname = "null/" + peerId + "/";
+				File newDir = new File(dirname);
+				newDir.mkdirs();
+				
+				
+				pFile.createNewFile();
+				
+				FileOutputStream fileOut = new FileOutputStream(pFile);
+				fileOut.write(m.getMessage(true), 4, length-4);
+				fileOut.close();
+				
+				currentParts++;
+				
+				//now that we have the file piece, send out have message
+				for(int i = 0; i < myPeers.size(); i++) {
+					//System.out.println("Sent Have Message for part: " + currentParts-1 + " 
+					Message haveMessage = HaveMessage.createMessage(currentParts);
+					
+					sendMessageToPeer(i, haveMessage);
+				}
+			}
+			
+			else if ((int)messageType[0] == 4) {
+				int pieceNum = byteToInt(m.getMessage(true));
+				numPiecesPerPeer.set(index, pieceNum);
+				System.out.println("Updated NumPiecesPerPeer: " + numPiecesPerPeer);
 			}
 			
 			
 		} catch (Exception e) {
+			System.out.println("Error: " + e.toString());
 			System.out.println("\n"+Arrays.toString(e.getStackTrace()));
 			// e.printStackTrace();
 			//System.exit(1);
 		}
 	}
 	//Currently setting an empty bitfield message
-	 public void sendBitfieldMessageToPeer(int index) {
+	/* public void sendBitfieldMessageToPeer(int index) {
 		try {
 			//System.out.println("Trying to send bitfield message");
 			Socket p = myPeers.get(index);
@@ -464,12 +512,13 @@ public class Peer {
 		
 			//System.out.println("Sent " + new String(message) + " with pId " +peerId + " to " + myPeers.get(index));
 		} catch (Exception e) {
+			
 			System.out.println("****\n"+Arrays.toString(e.getStackTrace()));
 			// e.printStackTrace();
 			//System.exit(1);
 		}
 	}
-	
+	*/
 	/* Receives the Bitfield message from peer
 	*  Note: should only be received one time per peer
 	*
@@ -552,9 +601,20 @@ public class Peer {
 		return bb.getInt();
 	}
 	
+	public static int byteToInt(byte [] bytes) {
+		ByteBuffer bb = ByteBuffer.wrap(bytes, 0, 4);
+		return bb.getInt();
+	}
+	
 	public static byte [] intToByte (int length) {
 		return ByteBuffer.allocate(4).putInt(length).array();
 	}
+	
+	public File getFile(int pieceNum) {
+		File file = new File(fileName+pieceNum);
+		return file;
+	}
+	
 	public int myPeersSize() {
 		/* 
 			returns how many Peers this Peer has

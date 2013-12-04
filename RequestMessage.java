@@ -42,7 +42,7 @@ public class RequestMessage extends Message{
 	
 	public byte [] sendMessage() {
 		//do something
-		return "BitFieldMessage".getBytes();
+		return "".getBytes();
 		//return messageBody;
 	
 	}
