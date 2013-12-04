@@ -123,6 +123,10 @@ public class PeerProcess {
 			for (int i = 0; i < peer.myInputsSize(); i++) {
 				peer.receiveMessageFromPeer(i);
 			}
+			
+			for (int i = 0; i < peer.myInputsSize(); i++) {
+				peer.receiveMessageFromPeer(i);
+			}
 		} catch (Exception e){
 			System.out.println("\n"+Arrays.toString(e.getStackTrace()));
 			// e.printStackTrace();

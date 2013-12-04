@@ -16,6 +16,7 @@ import java.io.PrintWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Scanner;
 /*
 Peer Class
 -Instances of this class will be running on all of the different user machines
@@ -380,6 +381,15 @@ public class Peer {
 			System.out.println("Before receive");
 			DataInputStream in = new DataInputStream(p.getInputStream());
 			//System.out.println("Before Reading Bitfield Message");
+			//Scanner hasNextCheck = new Scanner(in);
+			//if (!hasNextCheck.hasNext()) {
+				//System.out.println("No input found");
+				//return;
+			//}
+			if (in.available() == 0) {
+				System.out.println("No input found");
+				return;
+			}
 			in.read(messageLength, 0, 4);
 			in.read(messageType, 0, 1);
 			
