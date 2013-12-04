@@ -24,18 +24,12 @@ Peer Class
 */
 
 public class Peer {
-	//private final static Logger LOGGER = Logger.getLogger(Peer.class .getName());
-	//Logger set up
-	private PrintWriter logger;
+	private FileOutputStream logger;
 	
 	private int [] peerPorts;
 	
-	//TODO populate initially based on bitfield message
-	//Maintain as HAVE messages are received
 	private ArrayList<Integer> numPiecesPerPeer;
-	//TODO not choking yet
 	private ArrayList<Boolean> peerChoked;
-	//TODO not interesting
 	private ArrayList<Boolean> peerInterested;
 	
 	private int currentParts;
@@ -61,6 +55,11 @@ public class Peer {
 			peerInfoStrings = pIS;
 			peerId = myPeerId;
 			peerPorts = new int [peerInfoStrings.size()];
+			
+			File newLog = new File("logs/log_peer_" + peerId + ".log");
+			logger = new FileOutputStream(newLog);
+			
+			logger.write(("Logger created for peer " + peerId).getBytes());
 			
 			this.fileName = fileName;
 			
