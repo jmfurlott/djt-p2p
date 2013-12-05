@@ -49,6 +49,7 @@ public class Peer {
 	private ServerSocket [] myServers;
 	private boolean [] connected;
 	private boolean [] connectedServers;
+
 	
 	private int numConnectedSev;
 	private HashMap<String, Integer> mapPeers = new HashMap<String, Integer>();
@@ -62,7 +63,7 @@ public class Peer {
 			File newLog = new File("logs/log_peer_" + peerId + ".log");
 			logger = new FileOutputStream(newLog);
 			
-			logger.write(("Logger created for peer " + peerId).getBytes());
+			//writeToLog("Logger created for peer " + peerId);
 			
 			this.fileName = fileName;
 			
@@ -81,6 +82,7 @@ public class Peer {
 			peerInterested = new ArrayList<Boolean>();
 			peersChoked = new ArrayList<Boolean>();
 			chokingMe = new ArrayList<Boolean>();
+
 			
 			optimisticNeighbor = -1;
 			
@@ -181,7 +183,8 @@ public class Peer {
 					
 					//TODO need to convert this to a logger event
 					String date = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS").format(new Date());
-					System.out.println("[" + date + "]: Peer [" + peerId + "] makes a connection to Peer [" + peerPorts[i] + "]");
+					writeToLog("[" + date + "]: Peer [" + peerId + "] makes a connection to Peer [" + peerPorts[i] + "]");
+					
 				}
 
 				else {
@@ -223,7 +226,7 @@ public class Peer {
 						
 						//TODO convert these into a logger event
 						
-						System.out.println("[" + date + "]: Peer [" + peerPorts[i] + "] is connected from Peer [" + peerId + "]");
+						//System.out.println("[" + date + "]: Peer [" + myPeersIds.get(i) + "] is connected from Peer [" + peerId + "]");
 						//if (!myPeers.contains(p)) {
 							//myPeersCli.add(p);
 						numConnectedSev++;
@@ -281,7 +284,7 @@ public class Peer {
 			//System.out.println("Sent " + new String(message) + " with pId " +peerId + " to " + myPeers.get(index));
 			String date = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS").format(new Date());			
 			//TODO convert these into a logger event		
-			System.out.println("[" + date + "]: Peer [" + peerPorts[index] + "] sent handshake message to Peer [" + peerId + "]");
+			//System.out.println("[" + date + "]: Peer [" + myPeersIds.get(index) + "] sent handshake message to Peer [" + peerId + "]");
 			
 		} catch (Exception e) {
 			System.out.println("\n"+Arrays.toString(e.getStackTrace()));
@@ -314,7 +317,7 @@ public class Peer {
 				//System.out.println("HandShake message received from " + pId + " by " + peerId);
 				String date = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS").format(new Date());			
 				//TODO convert these into a logger event		
-				System.out.println("[" + date + "]: Peer [" + peerPorts[index] + "] received handshake message from Peer [" + peerId + "]");
+				//System.out.println("[" + date + "]: Peer [" + myPeersIds.get(index) + "] received handshake message from Peer [" + peerId + "]");
 			}
 			else {
 				System.out.println("This is not a handshake..., attempting to read rest of message");
@@ -412,7 +415,7 @@ public class Peer {
 				return false;
 			}
 			in.read(messageLength, 0, 4);
-			in.read(messageType, 0, 1);
+            in.read(messageType, 0, 1);
 			
 			Message m = createMessage(messageType[0]);
 			m.receiveMessage(messageLength, in);
@@ -442,11 +445,17 @@ public class Peer {
 				System.out.println("Received Interested Message");
 				peerInterested.set(index, true);
 				//receiveMessageFromPeer(index);
+				date = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS").format(new Date());
+				String log = "[" + date + "]: Peer [" + peerId + "] received a 'interested' message from [" + myPeersIds.get(index) + "]";
+				writeToLog(log);
 			}
 			
 			else if ((int)messageType[0] == 3) {
 				System.out.println("Received Not Interested Message");
 				peerInterested.set(index, false);
+				date = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS").format(new Date());
+				String log = "[" + date + "]: Peer [" + peerId + "] received a 'not interested' message from [" + myPeersIds.get(index) + "]";
+				writeToLog(log);
 			}
 			
 			else if ((int)messageType[0] == 6) {
@@ -484,6 +493,9 @@ public class Peer {
 						sendMessageToPeer(i, haveMessage);
 					}
 				}
+				date = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS").format(new Date());
+				String log = "[" + date + "]: Peer [" + peerId + "] has downloaded the piece [" +piece+"] from [" + myPeersIds.get(index) + "].\nNow the number of pieces it has is ["+currentParts+"]";
+				writeToLog(log);
 			}
 			
 			else if ((int)messageType[0] == 4) {
@@ -493,14 +505,24 @@ public class Peer {
 				if (currentParts < pieceNum) {
 					sendMessageToPeer(index, new InterestedMessage());
 				}
+				
+				date = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS").format(new Date());
+				String log = "[" + date + "]: Peer [" + peerId + "] received a 'have' message from [" + myPeersIds.get(index) + "] for the piece [" + pieceNum +"]";
+				writeToLog(log);
 			}
 			
 			else if ((int)messageType[0] == 0) {
 				chokingMe.set(index, true);
+				date = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS").format(new Date());
+				String log = "[" + date + "]: Peer [" + peerId + "] is choked by [" + myPeersIds.get(index) + "]";
+				writeToLog(log);
 			}
 			
 			else if ((int)messageType[0] == 1) {
 				chokingMe.set(index, false);
+				date = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS").format(new Date());
+				String log = "[" + date + "]: Peer [" + peerId + "] is unchoked by [" + myPeersIds.get(index) + "]";
+				writeToLog(log);
 			}
 			
 			return true;
@@ -587,7 +609,7 @@ public class Peer {
 				}
 				String date = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS").format(new Date());			
 				//TODO convert these into a logger event		
-				System.out.println("[" + date + "]: Peer [" + peerPorts[index] + "] received bitfield message to Peer [" + peerId + "]");
+				System.out.println("[" + date + "]: Peer [" + myPeersIds.get(index) + "] received bitfield message to Peer [" + peerId + "]");
 				
 				//System.out.println("Message payload size = " + messagePayloadSize);
 				//System.out.println(" " + helper[0] + " " + helper[1] + " " + helper[2] + " " + helper[3]);	
@@ -617,7 +639,7 @@ public class Peer {
 	
 	public void unchokingInterval(int numNeighbors) {
 		int numChoked = 0;
-		int numNeededToChoke = peerInterested.size()-numNeighbors;
+		int numNeededToChoke = peerInterested.size()-numNeighbors-1;
 		for (int i = 0; i < peerInterested.size(); i++) {
 			if (!peerInterested.get(i) && i != optimisticNeighbor) {
 				peersChoked.set(i, true);
@@ -635,7 +657,7 @@ public class Peer {
 					random = 0;
 				}
 				
-				if (!peersChoked.get(random)) {
+				if (!peersChoked.get(random) && random != optimisticNeighbor) {
 					peersChoked.set(random, true);
 					break;
 				}
@@ -652,6 +674,16 @@ public class Peer {
 			}
 			sendMessageToPeer(i, message);
 		}
+		StringBuilder builder = new StringBuilder();
+		for (int i = 0; i < myInputsSize(); i++) {
+			if (!peersChoked.get(i) && i != optimisticNeighbor) {
+				builder.append(myPeersIds.get(i)+",");
+			}
+		}
+		//builder.deleteCharAt(builder.length()-1);
+		String date = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS").format(new Date());
+		String log = "[" + date + "]: Peer [" + peerId + "] has the preferred neighbors [" + builder + "]";
+		writeToLog(log);
 	}
 	
 	public void optimisticUnchockingInterval(int numNeighbors) {
@@ -661,12 +693,31 @@ public class Peer {
 			if (random >= myInputsSize()) {
 				random = 0;
 			}
-			
-			if (!peerInterested.get(random)) {
+			System.out.println("Random: " + random);
+			if (peerInterested.get(random)) {
 				optimisticNeighbor = random;
 				break;
 			}
 			random++;
+		}
+		//System.out.println("OptimisticNeighbor: " + optimisticNeighbor);
+		//System.out.println("MyPeersIds: " + myPeersIds);
+		
+		if (optimisticNeighbor >= 0) {
+			String date = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS").format(new Date());
+			String log = "[" + date + "]: Peer [" + peerId + "] has the optimistically-unchoked neighbor [" + myPeersIds.get(optimisticNeighbor) + "]";
+			writeToLog(log);
+		}
+		
+	}
+	
+	public void writeToLog(String str) {
+		try {
+			logger.write(str.getBytes());
+			logger.write("\n".getBytes());
+		} catch (Exception e) {
+			System.out.println("Error: " + e.toString());
+			System.out.println("\n"+Arrays.toString(e.getStackTrace()));
 		}
 	}
 	
@@ -752,6 +803,9 @@ public class Peer {
 				return false;
 			}
 		}
+		String date = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS").format(new Date());
+		String log = "[" + date + "]: Peer [" + peerId + "] has downloaded the complete file";
+				writeToLog(log);
 		return true;
 	}
 	/* public int createToPort(int port) {
